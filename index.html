@@ -3,38 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Klokkemesteren</title>
+    <title>Klokkemesteren - Spillet!</title>
 
-    <!-- Link til Google Fonts (Pacifico for tittel, Roboto for brødtekst) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 
-    <!-- Link til CSS-filen -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- Hovedcontainer for applikasjonen -->
     <div class="app-container">
 
-        <!-- Tittel -->
         <h1>Klokkemesteren</h1>
 
-        <!-- Område for selve spillet (klokker og oppgave) -->
+        <!-- Statuslinje: Poeng, Liv, Tid -->
+        <div class="game-status">
+            <p>Poeng: <span id="score">0</span></p>
+            <p>Liv: <span id="lives-display">❤️❤️❤️</span></p>
+            <p>Tid: <span id="timer-display">15</span>s</p>
+        </div>
+
+        <!-- Område for selve spillet -->
         <div class="game-area">
-
-            <!-- Visning av klokkene -->
             <div class="clock-display">
-
-                <!-- Analog Klokke -->
                 <div class="analog-clock" id="analog-clock">
-                    <!-- Visere -->
                     <div class="hand hour-hand" id="hour-hand"></div>
                     <div class="hand minute-hand" id="minute-hand"></div>
-                    <!-- Midtpunkt -->
                     <div class="center-dot"></div>
-                    <!-- Tall på klokka (uten ekstra div inni) -->
                     <div class="number number1">1</div>
                     <div class="number number2">2</div>
                     <div class="number number3">3</div>
@@ -48,59 +44,72 @@
                     <div class="number number11">11</div>
                     <div class="number number12">12</div>
                 </div>
-
-                <!-- Digital Klokke -->
                 <div class="digital-clock" id="digital-clock-display">
                     <span id="digital-hour">00</span>:<span id="digital-minute">00</span>
                 </div>
             </div>
-
-            <!-- Område for oppgave, svaralternativer og feedback -->
             <div class="task-area">
-                <!-- Spørsmål/Instruksjon -->
                 <h2 id="task-question">Hva er klokka?</h2>
-                <!-- Container for svaralternativ-knapper (Les klokka modus) -->
-                <div id="answer-options" class="answer-options">
-                    <!-- Alternativer lastes inn av JavaScript -->
-                </div>
-                <!-- Knapp for å sjekke svaret (Still klokka modus) -->
+                <div id="answer-options" class="answer-options"></div>
                 <button id="check-answer-button" class="action-button hidden">Sjekk Svaret</button>
-                <!-- Tilbakemelding til brukeren -->
                 <p id="feedback" class="feedback"></p>
             </div>
         </div>
 
-        <!-- Område for spillinformasjon (poeng, neste knapp) -->
-        <div class="game-info">
-            <p>Poeng: <span id="score">0</span></p>
+        <!-- Spillkontroller / Game Over -->
+        <div class="game-controls">
             <button id="next-task-button" class="action-button hidden">Neste oppgave</button>
+            <div id="game-over-message" class="hidden">
+                <h2>Game Over!</h2>
+                <p>Din poengsum: <span id="final-score">0</span></p>
+                <button id="restart-button" class="action-button">Start på nytt</button>
+            </div>
         </div>
 
-        <!-- Område for innstillinger (modus, vanskelighetsgrad) -->
+
+        <!-- Innstillinger -->
         <div class="settings">
-           <label for="mode-select">Modus:</label>
-           <select id="mode-select">
-               <option value="read_analog">Les Analog</option>
-               <option value="set_analog">Still Analog</option>
-               <!-- Fremtidige moduser kan aktiveres ved å fjerne 'disabled' -->
-               <option value="read_digital" disabled>Les Digital (TODO)</option>
-               <option value="set_digital" disabled>Still Digital (TODO)</option>
-               <option value="match_clocks" disabled>Koble Klokker (TODO)</option>
+           <label for="game-mode-select">Spilltype:</label>
+           <select id="game-mode-select">
+               <option value="game">🏆 Spillmodus (Alle oppgaver)</option>
+               <option value="custom">⚙️ Egendefinert Øving</option>
            </select>
 
-           <label for="difficulty-select">Nivå:</label>
-           <select id="difficulty-select">
-                <option value="1">Hele timer</option>
-                <option value="2">Halvtimer</option>
-                <option value="3">Kvart over/på</option>
-                <option value="4">5-minutter</option>
-                <option value="5">Alle minutter</option>
-           </select>
+           <!-- Egendefinerte innstillinger (vises kun når 'custom' er valgt) -->
+           <div id="custom-practice-settings" class="hidden">
+               <fieldset>
+                   <legend>Velg Oppgavetyper:</legend>
+                   <div class="checkbox-group">
+                       <input type="checkbox" id="mode-read-analog" value="read_analog" checked> <label for="mode-read-analog">Les Analog</label>
+                   </div>
+                   <div class="checkbox-group">
+                       <input type="checkbox" id="mode-set-analog" value="set_analog" checked> <label for="mode-set-analog">Still Analog</label>
+                   </div>
+                   <!-- Legg til flere moduser her når de implementeres -->
+               </fieldset>
+               <fieldset>
+                   <legend>Velg Vanskelighetsgrad:</legend>
+                    <div class="checkbox-group">
+                       <input type="checkbox" id="diff-1" value="1" checked> <label for="diff-1">Hele timer</label>
+                    </div>
+                     <div class="checkbox-group">
+                       <input type="checkbox" id="diff-2" value="2" checked> <label for="diff-2">Halvtimer</label>
+                    </div>
+                    <div class="checkbox-group">
+                       <input type="checkbox" id="diff-3" value="3" checked> <label for="diff-3">Kvart over/på</label>
+                    </div>
+                    <div class="checkbox-group">
+                       <input type="checkbox" id="diff-4" value="4" checked> <label for="diff-4">5-minutter</label>
+                    </div>
+                    <div class="checkbox-group">
+                       <input type="checkbox" id="diff-5" value="5" checked> <label for="diff-5">Alle minutter</label>
+                    </div>
+               </fieldset>
+           </div>
         </div>
 
-    </div> <!-- Slutt på app-container -->
+    </div>
 
-    <!-- Link til JavaScript-filen (plasseres vanligvis sist i body) -->
     <script src="script.js"></script>
 
 </body>
