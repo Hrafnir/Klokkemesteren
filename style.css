@@ -1,94 +1,129 @@
+/* CSS Variabler for enklere fargetema */
+:root {
+    --primary-color: #007bff; /* Levende blå */
+    --secondary-color: #6c757d; /* Grå */
+    --background-start: #e0f7fa; /* Lys cyan */
+    --background-end: #b2ebf2;   /* Litt mørkere cyan */
+    --container-bg: rgba(255, 255, 255, 0.9); /* Litt gjennomsiktig hvit */
+    --clock-border: #adb5bd; /* Lys grå */
+    --clock-face: #ffffff;
+    --text-color: #343a40; /* Mørk grå */
+    --hour-hand-color: #dc3545; /* Rød */
+    --minute-hand-color: #007bff; /* Blå */
+    --center-dot-color: #343a40;
+    --correct-color: #28a745; /* Grønn */
+    --incorrect-color: #dc3545; /* Rød */
+    --button-primary-bg: #007bff;
+    --button-primary-hover: #0056b3;
+    --button-secondary-bg: #6c757d;
+    --button-secondary-hover: #5a6268;
+    --button-action-bg: #ffc107; /* Gul */
+    --button-action-hover: #e0a800;
+    --font-family: 'Roboto', sans-serif; /* Fallback til standard sans-serif */
+    --font-heading: 'Pacifico', cursive; /* En mer leken font for tittelen */
+}
+
 body {
-    font-family: sans-serif;
+    font-family: var(--font-family);
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background-color: #f0f8ff; /* Lys blå bakgrunn */
+    background: linear-gradient(135deg, var(--background-start), var(--background-end));
     margin: 0;
+    color: var(--text-color);
 }
 
 .app-container {
-    background-color: #ffffff;
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    background-color: var(--container-bg);
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
     text-align: center;
     width: 90%;
-    max-width: 600px;
+    max-width: 700px; /* Litt bredere for større klokker */
 }
 
 h1 {
-    color: #0056b3; /* Mørkere blå */
-    margin-bottom: 20px;
+    font-family: var(--font-heading);
+    color: var(--primary-color);
+    font-size: 3em; /* Større tittel */
+    margin-bottom: 30px;
 }
 
 .game-area {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-bottom: 20px;
-    min-height: 350px; /* Gi plass til klokke og oppgave */
+    margin-bottom: 30px;
+    min-height: 450px; /* Mer plass */
 }
 
 .clock-display {
     display: flex;
-    flex-direction: column; /* Stabler klokkene over hverandre */
+    flex-direction: column;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 30px;
 }
 
 /* --- Analog Klokke --- */
 .analog-clock {
-    width: 200px;
-    height: 200px;
-    border: 5px solid #333;
+    width: 300px; /* Større klokke */
+    height: 300px; /* Større klokke */
+    border: 8px solid var(--clock-border);
     border-radius: 50%;
     position: relative;
-    margin-bottom: 15px; /* Plass mellom analog og digital */
-    background-color: #fff;
+    margin-bottom: 25px;
+    background-color: var(--clock-face);
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.1);
 }
+
+/* Legg til interaktivt hint */
+.analog-clock.interactive-clock {
+    cursor: grab; /* Hint om at den kan dras */
+}
+.analog-clock.interactive-clock:active {
+    cursor: grabbing;
+}
+
 
 .hand {
     width: 50%;
-    height: 4px; /* Tykkelse på viser */
-    background: #333;
     position: absolute;
     top: 50%;
-    transform-origin: 100%; /* Rotasjonspunkt i enden */
-    transform: translate(0, -50%) rotate(90deg); /* Starter på 12 */
-    border-radius: 2px; /* Litt avrundet */
+    left: 0; /* Starter fra venstre kant */
+    transform-origin: 100% 50%; /* Rotasjonspunkt i høyre midten */
+    transform: translateY(-50%) rotate(90deg); /* Starter kl 12 */
+    border-radius: 3px;
+    transition: transform 0.05s linear; /* Mykere bevegelse under drag, men ikke for treg */
+    z-index: 5;
 }
 
 .hour-hand {
-    width: 35%; /* Kortere */
-    left: 15%; /* Justerer startposisjon pga kortere lengde */
-    height: 6px; /* Tykkere */
-    background-color: #222; /* Litt mørkere */
+    width: 35%;
+    left: 15%;
+    height: 8px; /* Tykkere */
+    background-color: var(--hour-hand-color); /* Rød timeviser */
+    z-index: 6; /* Over minuttviser */
 }
 
 .minute-hand {
-    height: 4px;
-    background-color: #444;
+    width: 45%; /* Litt lengre */
+    left: 5%;
+    height: 6px; /* Litt tykkere */
+    background-color: var(--minute-hand-color); /* Blå minuttviser */
 }
 
-/* .second-hand {
-    height: 2px;
-    background: red;
-    width: 45%;
-    left: 5%;
-} */
-
 .center-dot {
-    width: 10px;
-    height: 10px;
-    background: #555;
+    width: 15px; /* Større */
+    height: 15px; /* Større */
+    background: var(--center-dot-color);
     border-radius: 50%;
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    z-index: 10; /* Over viserne */
+    z-index: 10;
 }
 
 .number {
@@ -96,34 +131,41 @@ h1 {
     width: 100%;
     height: 100%;
     text-align: center;
-    font-size: 1.2em;
+    font-size: 1.6em; /* Større tall */
     font-weight: bold;
-    color: #333;
-    /* Plassering av tall - juster padding-top for posisjon */
+    color: var(--text-color);
+    /* Plassering forblir den samme logikken, men justert for større klokke */
+    display: flex; /* Bruk flex for å sentrere innholdet (div inni) */
+    justify-content: center;
 }
-/* Manuell plassering av tallene rundt sirkelen */
-.number1 { transform: rotate(30deg); padding-top: 5px;} .number1 > div { transform: rotate(-30deg); }
-.number2 { transform: rotate(60deg); padding-top: 5px;} .number2 > div { transform: rotate(-60deg); }
-.number3 { transform: rotate(90deg); padding-top: 5px;} .number3 > div { transform: rotate(-90deg); }
-.number4 { transform: rotate(120deg); padding-top: 5px;} .number4 > div { transform: rotate(-120deg); }
-.number5 { transform: rotate(150deg); padding-top: 5px;} .number5 > div { transform: rotate(-150deg); }
-.number6 { transform: rotate(180deg); padding-top: 5px;} .number6 > div { transform: rotate(-180deg); }
-.number7 { transform: rotate(210deg); padding-top: 5px;} .number7 > div { transform: rotate(-210deg); }
-.number8 { transform: rotate(240deg); padding-top: 5px;} .number8 > div { transform: rotate(-240deg); }
-.number9 { transform: rotate(270deg); padding-top: 5px;} .number9 > div { transform: rotate(-270deg); }
-.number10 { transform: rotate(300deg); padding-top: 5px;} .number10 > div { transform: rotate(-300deg); }
-.number11 { transform: rotate(330deg); padding-top: 5px;} .number11 > div { transform: rotate(-330deg); }
-.number12 { transform: rotate(0deg); padding-top: 5px;} /* Ingen rotasjon for 12 */
+.number > div { /* Nødvendig for å rotere teksten tilbake */
+    display: inline-block; /* Slik at transform virker */
+    padding-top: 10px; /* Juster vertikal posisjon av tallet */
+}
+/* Samme rotasjonslogikk som før */
+.number1 { transform: rotate(30deg); } .number1 > div { transform: rotate(-30deg); }
+.number2 { transform: rotate(60deg); } .number2 > div { transform: rotate(-60deg); }
+.number3 { transform: rotate(90deg); } .number3 > div { transform: rotate(-90deg); }
+.number4 { transform: rotate(120deg); } .number4 > div { transform: rotate(-120deg); }
+.number5 { transform: rotate(150deg); } .number5 > div { transform: rotate(-150deg); }
+.number6 { transform: rotate(180deg); } .number6 > div { transform: rotate(-180deg); }
+.number7 { transform: rotate(210deg); } .number7 > div { transform: rotate(-210deg); }
+.number8 { transform: rotate(240deg); } .number8 > div { transform: rotate(-240deg); }
+.number9 { transform: rotate(270deg); } .number9 > div { transform: rotate(-270deg); }
+.number10 { transform: rotate(300deg); } .number10 > div { transform: rotate(-300deg); }
+.number11 { transform: rotate(330deg); } .number11 > div { transform: rotate(-330deg); }
+.number12 { transform: rotate(0deg); }   .number12 > div { transform: rotate(0deg); }
 
 /* --- Digital Klokke --- */
-.digital-clock {
-    font-size: 2.5em;
-    font-family: 'Courier New', Courier, monospace; /* Klassisk digital font */
-    background-color: #eee;
-    padding: 10px 20px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    color: #333;
+#digital-clock-display { /* Gitt en egen ID for tydelighet */
+    font-size: 3.5em; /* Større digital visning */
+    font-family: 'Courier New', Courier, monospace;
+    background-color: #e9ecef; /* Lys grå bakgrunn */
+    padding: 15px 30px;
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+    color: var(--text-color);
+    min-width: 180px; /* Sørger for nok bredde */
 }
 
 /* --- Oppgave og Svar --- */
@@ -133,92 +175,121 @@ h1 {
 }
 
 #task-question {
-    font-size: 1.4em;
-    margin-bottom: 15px;
-    color: #333;
+    font-size: 1.8em; /* Større spørsmål */
+    margin-bottom: 25px; /* Mer luft */
+    color: var(--primary-color);
+    min-height: 1.2em; /* Forhindre hopping */
 }
 
 .answer-options {
     display: flex;
-    flex-wrap: wrap; /* Lar knappene flyte til neste linje om nødvendig */
+    flex-wrap: wrap;
     justify-content: center;
-    gap: 10px; /* Mellomrom mellom knapper */
-    margin-bottom: 15px;
+    gap: 15px; /* Mer mellomrom */
+    margin-bottom: 20px;
 }
 
 .answer-options button {
-    padding: 10px 20px;
-    font-size: 1.1em;
+    padding: 12px 25px; /* Større knapper */
+    font-size: 1.2em;
     cursor: pointer;
-    background-color: #007bff; /* Blå knapp */
+    background-color: var(--button-primary-bg);
     color: white;
     border: none;
-    border-radius: 5px;
-    transition: background-color 0.2s ease;
+    border-radius: 8px;
+    transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
 .answer-options button:hover {
-    background-color: #0056b3; /* Mørkere blå ved hover */
+    background-color: var(--button-primary-hover);
+    transform: translateY(-2px); /* Liten hover-effekt */
+}
+.answer-options button:disabled {
+    opacity: 0.7;
+    cursor: default;
+    transform: none;
+}
+.answer-options button.correct-answer-display {
+    background-color: var(--correct-color);
+    border: 2px solid var(--text-color); /* Tydeligere markering av riktig */
+}
+.answer-options button.selected-wrong-answer {
+     background-color: var(--incorrect-color);
+     opacity: 0.8;
 }
 
+
 .feedback {
-    font-size: 1.2em;
+    font-size: 1.4em; /* Større feedback */
     font-weight: bold;
-    min-height: 1.5em; /* Sørger for at layout ikke hopper */
-    margin-top: 10px;
+    min-height: 1.5em;
+    margin-top: 15px;
 }
 
 .feedback.correct {
-    color: #28a745; /* Grønn for riktig */
+    color: var(--correct-color);
 }
 
 .feedback.incorrect {
-    color: #dc3545; /* Rød for feil */
+    color: var(--incorrect-color);
 }
 
 /* --- Spillinfo og Innstillinger --- */
 .game-info {
-    margin-top: 20px;
-    color: #555;
+    margin-top: 30px;
+    color: var(--secondary-color);
     display: flex;
     justify-content: space-around;
     align-items: center;
     width: 100%;
+    font-size: 1.2em;
 }
 
+.game-info p {
+    margin: 0 15px; /* Mer luft rundt poeng */
+}
+
+
 .settings {
-    margin-top: 20px;
-    padding-top: 15px;
-    border-top: 1px solid #eee;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #dee2e6;
     display: flex;
     justify-content: center;
-    gap: 15px;
-    flex-wrap: wrap; /* Tillat wrapping på små skjermer */
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: center;
 }
 
 .settings label {
     margin-right: 5px;
+    font-weight: bold;
 }
 
-.settings select, .settings button {
-    padding: 5px 10px;
-    font-size: 0.9em;
+.settings select {
+    padding: 8px 12px;
+    font-size: 1em;
+    border-radius: 5px;
+    border: 1px solid #ced4da;
 }
 
-#next-task-button {
-     padding: 8px 15px;
-     font-size: 1em;
-     background-color: #ffc107; /* Gul knapp */
-     color: #333;
+/* Generell stil for action-knapper */
+.action-button {
+     padding: 12px 25px;
+     font-size: 1.2em;
+     font-weight: bold;
+     color: var(--text-color);
+     background-color: var(--button-action-bg);
      border: none;
-     border-radius: 5px;
+     border-radius: 8px;
      cursor: pointer;
-     transition: background-color 0.2s ease;
+     transition: background-color 0.2s ease, transform 0.1s ease;
 }
-#next-task-button:hover {
-    background-color: #e0a800;
+.action-button:hover {
+    background-color: var(--button-action-hover);
+    transform: translateY(-2px);
 }
 
 .hidden {
-    display: none;
+    display: none !important; /* Viktig for å overstyre andre display-regler */
 }
