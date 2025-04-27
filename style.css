@@ -1,303 +1,540 @@
-/* CSS Variabler for enklere fargetema */
-:root {
-    --primary-color: #007bff; /* Levende blå */
-    --secondary-color: #6c757d; /* Grå */
-    --background-start: #e0f7fa; /* Lys cyan */
-    --background-end: #b2ebf2;   /* Litt mørkere cyan */
-    --container-bg: rgba(255, 255, 255, 0.9); /* Litt gjennomsiktig hvit */
-    --clock-border: #adb5bd; /* Lys grå */
-    --clock-face: #ffffff;
-    --text-color: #343a40; /* Mørk grå */
-    --hour-hand-color: #dc3545; /* Rød */
-    --minute-hand-color: #007bff; /* Blå */
-    --center-dot-color: #343a40;
-    --correct-color: #28a745; /* Grønn */
-    --incorrect-color: #dc3545; /* Rød */
-    --button-primary-bg: #007bff;
-    --button-primary-hover: #0056b3;
-    --button-secondary-bg: #6c757d;
-    --button-secondary-hover: #5a6268;
-    --button-action-bg: #ffc107; /* Gul */
-    --button-action-hover: #e0a800;
-    --font-family: 'Roboto', sans-serif; /* Fallback til standard sans-serif */
-    --font-heading: 'Pacifico', cursive; /* KUL FONT HER */
-}
+// --- DOM Elementer ---
+const analogClockElement = document.getElementById('analog-clock');
+const hourHand = document.getElementById('hour-hand');
+const minuteHand = document.getElementById('minute-hand');
+const digitalClockDisplay = document.getElementById('digital-clock-display');
+const digitalHour = document.getElementById('digital-hour');
+const digitalMinute = document.getElementById('digital-minute');
+const taskQuestion = document.getElementById('task-question');
+const answerOptionsContainer = document.getElementById('answer-options');
+const checkAnswerButton = document.getElementById('check-answer-button');
+const feedbackElement = document.getElementById('feedback');
+const scoreElement = document.getElementById('score');
+const livesDisplay = document.getElementById('lives-display'); // NY
+const timerDisplay = document.getElementById('timer-display'); // NY
+const nextTaskButton = document.getElementById('next-task-button');
+const gameOverMessage = document.getElementById('game-over-message'); // NY
+const finalScoreElement = document.getElementById('final-score'); // NY
+const restartButton = document.getElementById('restart-button'); // NY
+const gameModeSelect = document.getElementById('game-mode-select'); // NY (erstatter modeSelect)
+const customPracticeSettings = document.getElementById('custom-practice-settings'); // NY
+// Checkboxes (hentes dynamisk ved behov)
 
-body {
-    font-family: var(--font-family);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    background: linear-gradient(135deg, var(--background-start), var(--background-end));
-    margin: 0;
-    color: var(--text-color);
-}
+// --- Spillstatus ---
+let score = 0;
+let lives = 3; // Start med 3 liv
+const MAX_TIME = 15; // Sekunder per oppgave
+let remainingTime = MAX_TIME;
+let taskTimerInterval = null; // Holder ID for setInterval
+let taskActive = false; // Er en oppgave i gang?
+let gameModeActive = true; // Er vi i Spillmodus?
+let lastLifeBonusScore = 0; // Holder styr på når siste bonusliv ble gitt
+let isGameOver = false;
 
-.app-container {
-    background-color: var(--container-bg);
-    padding: 40px;
-    border-radius: 20px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-    text-align: center;
-    width: 90%;
-    max-width: 700px;
-}
+// --- Mål og Nåværende Tid ---
+let currentHour = 0;
+let currentMinute = 0;
+let targetHour = 0;
+let targetMinute = 0;
+let correctAnswerString = "";
 
-h1 {
-    font-family: var(--font-heading); /* Bruker variabelen definert i :root */
-    color: var(--primary-color);
-    font-size: 3.5em; /* Gjør den enda litt større */
-    margin-bottom: 30px;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.1); /* Liten skygge for effekt */
-}
+// --- Dra-status ---
+let isDragging = false;
+let draggedHand = null;
 
-.game-area {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 30px;
-    min-height: 450px;
-}
-
-.clock-display {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 30px;
-}
-
-/* --- Analog Klokke --- */
-.analog-clock {
-    width: 300px;
-    height: 300px;
-    border: 8px solid var(--clock-border);
-    border-radius: 50%;
-    position: relative;
-    margin-bottom: 25px;
-    background-color: var(--clock-face);
-    box-shadow: inset 0 0 15px rgba(0,0,0,0.1);
-}
-
-.analog-clock.interactive-clock {
-    cursor: grab;
-}
-.analog-clock.interactive-clock:active {
-    cursor: grabbing;
-}
+// --- Tilgjengelige Moduser & Nivåer ---
+const AVAILABLE_MODES = ['read_analog', 'set_analog']; // Utvid denne når nye moduser lages
+const AVAILABLE_DIFFICULTIES = ['1', '2', '3', '4', '5'];
 
 
-.hand {
-    width: 50%;
-    position: absolute;
-    top: 50%;
-    left: 0;
-    transform-origin: 100% 50%;
-    transform: translateY(-50%) rotate(90deg);
-    border-radius: 3px;
-    transition: transform 0.05s linear;
-    z-index: 5;
+// === INITIALISERING & GRUNNFUNKSJONER ===
+
+function initializeGame() {
+    score = 0;
+    lives = 3;
+    lastLifeBonusScore = 0;
+    isGameOver = false;
+    updateScoreDisplay();
+    updateLivesDisplay();
+    gameOverMessage.classList.add('hidden');
+    nextTaskButton.classList.add('hidden'); // Skjul i starten
+    checkAnswerButton.classList.add('hidden');
+    // Sjekk hvilken spilltype som er valgt ved start
+    toggleCustomSettings(gameModeSelect.value === 'custom');
+    generateNewTask();
 }
 
-.hour-hand {
-    width: 35%;
-    left: 15%;
-    height: 8px;
-    background-color: var(--hour-hand-color);
-    z-index: 6;
+function updateScoreDisplay() {
+    scoreElement.textContent = score;
 }
 
-.minute-hand {
-    width: 45%;
-    left: 5%;
-    height: 6px;
-    background-color: var(--minute-hand-color);
+function updateLivesDisplay() {
+    livesDisplay.textContent = '❤️'.repeat(Math.max(0, lives)); // Vis hjerter
 }
 
-.center-dot {
-    width: 15px;
-    height: 15px;
-    background: var(--center-dot-color);
-    border-radius: 50%;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 10;
+function toggleCustomSettings(show) {
+    gameModeActive = !show;
+    if (show) {
+        customPracticeSettings.classList.remove('hidden');
+    } else {
+        customPracticeSettings.classList.add('hidden');
+    }
 }
 
-/* --- NY STIL FOR TALL PÅ KLOKKA --- */
-.number {
-    position: absolute;
-    /* Plasser ankerpunktet i midten av klokka */
-    top: 50%;
-    left: 50%;
-    /* Gjør tallet til en liten boks for enklere posisjonering */
-    width: 40px;  /* Bredde på tallet's boks */
-    height: 40px; /* Høyde på tallet's boks */
-    margin-left: -20px; /* Halve bredden for å sentrere boksen */
-    margin-top: -20px;  /* Halve høyden for å sentrere boksen */
-    /* Sentrer innholdet i boksen */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 1.6em;
-    font-weight: bold;
-    color: var(--text-color);
-    /* Viktig: Transform origin for rotasjon/translasjon er senter */
-    transform-origin: center center;
+// === KLOKKEFUNKSJONER === (Samme som før, ingen store endringer her)
+
+function setAnalogTime(hour, minute) {
+    const displayHour = hour % 12;
+    const minuteDeg = (minute / 60) * 360;
+    const hourDeg = ((displayHour / 12) * 360) + ((minute / 60) * 30);
+    minuteHand.style.transform = `translateY(-50%) rotate(${minuteDeg + 90}deg)`;
+    hourHand.style.transform = `translateY(-50%) rotate(${hourDeg + 90}deg)`;
 }
 
-/* Kalkuler posisjon for hvert tall:
-   1. Roter koordinatsystemet rundt senter (rotate)
-   2. Flytt tallet OPP langs den nye Y-aksen (translateY) - juster avstanden (130px) etter ønske
-   3. Roter tallet TILBAKE slik at det står rett (rotate)
-*/
-.number1 { transform: rotate(30deg) translateY(-130px) rotate(-30deg); }
-.number2 { transform: rotate(60deg) translateY(-130px) rotate(-60deg); }
-.number3 { transform: rotate(90deg) translateY(-130px) rotate(-90deg); }
-.number4 { transform: rotate(120deg) translateY(-130px) rotate(-120deg); }
-.number5 { transform: rotate(150deg) translateY(-130px) rotate(-150deg); }
-.number6 { transform: rotate(180deg) translateY(-130px) rotate(-180deg); }
-.number7 { transform: rotate(210deg) translateY(-130px) rotate(-210deg); }
-.number8 { transform: rotate(240deg) translateY(-130px) rotate(-240deg); }
-.number9 { transform: rotate(270deg) translateY(-130px) rotate(-270deg); }
-.number10 { transform: rotate(300deg) translateY(-130px) rotate(-300deg); }
-.number11 { transform: rotate(330deg) translateY(-130px) rotate(-330deg); }
-.number12 { transform: rotate(0deg) translateY(-130px) rotate(0deg); } /* 12 er rett opp */
-
-
-/* --- Digital Klokke --- */
-#digital-clock-display {
-    font-size: 3.5em;
-    font-family: 'Courier New', Courier, monospace;
-    background-color: #e9ecef;
-    padding: 15px 30px;
-    border-radius: 8px;
-    border: 1px solid #ced4da;
-    color: var(--text-color);
-    min-width: 180px;
+function formatTwoDigits(number) {
+    return number.toString().padStart(2, '0');
 }
 
-/* --- Oppgave og Svar --- */
-.task-area {
-    margin-top: 20px;
-    width: 100%;
+function setDigitalTime(hour, minute) {
+     digitalHour.textContent = formatTwoDigits(hour % 24);
+     digitalMinute.textContent = formatTwoDigits(minute);
 }
 
-#task-question {
-    font-size: 1.8em;
-    margin-bottom: 25px;
-    color: var(--primary-color);
-    min-height: 1.2em;
+function displayTime(hour, minute) {
+    currentHour = Math.round(hour);
+    currentMinute = Math.round(minute);
+    setAnalogTime(currentHour, currentMinute);
+    setDigitalTime(currentHour, currentMinute);
 }
 
-.answer-options {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 15px;
-    margin-bottom: 20px;
+function timeToText(hour, minute, difficultyLevel) {
+    // Konverterer tallverdi (1-5) til et minimumsnivå for tekstformat
+    const difficulty = parseInt(difficultyLevel, 10);
+    let displayHour = hour % 12;
+    if (displayHour === 0) displayHour = 12;
+    let nextHour = (displayHour % 12) + 1;
+
+    if (minute === 0 && difficulty >= 1) return `Klokka ${displayHour}`;
+    if (minute === 30 && difficulty >= 2) return `Halv ${nextHour}`;
+    if (minute === 15 && difficulty >= 3) return `Kvart over ${displayHour}`;
+    if (minute === 45 && difficulty >= 3) return `Kvart på ${nextHour}`;
+
+    if (difficulty >= 4) {
+        if (minute === 5) return `Fem over ${displayHour}`;
+        if (minute === 10) return `Ti over ${displayHour}`;
+        if (minute === 20) return `Ti på halv ${nextHour}`;
+        if (minute === 25) return `Fem på halv ${nextHour}`;
+        if (minute === 35) return `Fem over halv ${nextHour}`;
+        if (minute === 40) return `Ti over halv ${nextHour}`;
+        if (minute === 50) return `Ti på ${nextHour}`;
+        if (minute === 55) return `Fem på ${nextHour}`;
+    }
+
+     if (difficulty >= 5 && minute !== 0 && minute !== 15 && minute !== 30 && minute !== 45) {
+         if (minute < 30) {
+            return `${minute} ${minute === 1 ? 'minutt' : 'minutter'} over ${displayHour}`;
+         } else {
+             return `${60 - minute} ${60 - minute === 1 ? 'minutt' : 'minutter'} på ${nextHour}`;
+         }
+     }
+
+    // Fallback hvis ingen tekst passer (f.eks. nivå 1 ber om 05 min)
+    return `${displayHour}:${formatTwoDigits(minute)}`;
 }
 
-.answer-options button {
-    padding: 12px 25px;
-    font-size: 1.2em;
-    cursor: pointer;
-    background-color: var(--button-primary-bg);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    transition: background-color 0.2s ease, transform 0.1s ease;
+
+// === OPPGAVEGENERERING ===
+
+function getRandomTime(difficulty) {
+    let hour = 0;
+    let minute = 0;
+    difficulty = difficulty.toString(); // Sørg for at det er en streng
+
+    switch (difficulty) {
+        case '1': minute = 0; break;
+        case '2': minute = 30; break;
+        case '3': minute = Math.random() < 0.5 ? 15 : 45; break;
+        case '4': minute = Math.floor(Math.random() * 12) * 5; break;
+        case '5': minute = Math.floor(Math.random() * 60); break;
+        default: minute = 0; // Fallback
+    }
+    hour = Math.floor(Math.random() * 12) + 1; // 1-12
+    return { hour, minute };
 }
 
-.answer-options button:hover {
-    background-color: var(--button-primary-hover);
-    transform: translateY(-2px);
-}
-.answer-options button:disabled {
-    opacity: 0.7;
-    cursor: default;
-    transform: none;
-}
-.answer-options button.correct-answer-display {
-    background-color: var(--correct-color);
-    border: 2px solid var(--text-color);
-}
-.answer-options button.selected-wrong-answer {
-     background-color: var(--incorrect-color);
-     opacity: 0.8;
+function createAnswerOptions(correctHour, correctMinute, difficulty) {
+    // ... (Samme logikk som før for å lage knapper) ...
+    answerOptionsContainer.innerHTML = '';
+    const options = new Set();
+    correctAnswerString = timeToText(correctHour, correctMinute, difficulty);
+    options.add(correctAnswerString);
+
+    let attempts = 0;
+    while (options.size < 4 && attempts < 30) { // Økt grense litt
+        // Viktig: Generer feil svar basert på SAMME vanskelighetsgrad
+        const randomTime = getRandomTime(difficulty);
+        if (randomTime.hour !== correctHour || randomTime.minute !== correctMinute) {
+            const wrongAnswerString = timeToText(randomTime.hour, randomTime.minute, difficulty);
+             if(!options.has(wrongAnswerString)){
+                 options.add(wrongAnswerString);
+             }
+        }
+        attempts++;
+    }
+     // Fyll på med enkle feil om nødvendig
+     while (options.size < 4 && attempts < 50) {
+         const randH = Math.floor(Math.random() * 12) + 1;
+         const randM = Math.floor(Math.random() * 12) * 5;
+          if (randH !== correctHour || randM !== correctMinute) {
+              const wrongAnswerString = timeToText(randH, randM, Math.max(parseInt(difficulty, 10), 4));
+               if(!options.has(wrongAnswerString)){
+                 options.add(wrongAnswerString);
+             }
+          }
+         attempts++;
+     }
+
+    const optionsArray = Array.from(options);
+    optionsArray.sort(() => Math.random() - 0.5);
+
+    optionsArray.forEach(optionText => {
+        const button = document.createElement('button');
+        button.textContent = optionText;
+        button.addEventListener('click', handleAnswerSelection);
+        answerOptionsContainer.appendChild(button);
+    });
 }
 
-.feedback {
-    font-size: 1.4em;
-    font-weight: bold;
-    min-height: 1.5em;
-    margin-top: 15px;
+// === TIMER OG SPILLFLYT ===
+
+function startTaskTimer() {
+    stopTaskTimer(); // Stopp eventuell gammel timer
+    remainingTime = MAX_TIME;
+    timerDisplay.textContent = remainingTime;
+    timerDisplay.classList.remove('low-time');
+    taskActive = true; // Oppgaven starter NÅ
+
+    taskTimerInterval = setInterval(() => {
+        remainingTime--;
+        timerDisplay.textContent = remainingTime;
+
+        if (remainingTime <= 5) {
+            timerDisplay.classList.add('low-time');
+        } else {
+            timerDisplay.classList.remove('low-time');
+        }
+
+        if (remainingTime <= 0) {
+            handleTimeout();
+        }
+    }, 1000); // Kjør hvert sekund
 }
 
-.feedback.correct {
-    color: var(--correct-color);
+function stopTaskTimer() {
+    clearInterval(taskTimerInterval);
+    taskTimerInterval = null;
 }
 
-.feedback.incorrect {
-    color: var(--incorrect-color);
+function handleTimeout() {
+    if (!taskActive) return; // Ikke gjør noe hvis oppgaven allerede er besvart/avbrutt
+    stopTaskTimer();
+    taskActive = false;
+    lives--;
+    updateLivesDisplay();
+    feedbackElement.textContent = "⏰ Tiden er ute!";
+    feedbackElement.className = 'feedback incorrect';
+    analogClockElement.classList.remove('interactive-clock');
+    checkAnswerButton.classList.add('hidden');
+    // Deaktiver svaralternativer hvis de finnes
+    answerOptionsContainer.querySelectorAll('button').forEach(btn => btn.disabled = true);
+
+    if (lives <= 0) {
+        gameOver();
+    } else {
+        nextTaskButton.classList.remove('hidden');
+    }
 }
 
-/* --- Spillinfo og Innstillinger --- */
-.game-info {
-    margin-top: 30px;
-    color: var(--secondary-color);
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    width: 100%;
-    font-size: 1.2em;
+function generateNewTask() {
+    if (isGameOver) return; // Ikke start ny oppgave hvis spillet er over
+
+    stopTaskTimer(); // Stopp forrige timer
+    taskActive = false; // Midlertidig inaktiv mens vi setter opp
+    feedbackElement.textContent = '';
+    feedbackElement.className = 'feedback';
+    nextTaskButton.classList.add('hidden');
+    checkAnswerButton.classList.add('hidden');
+    answerOptionsContainer.classList.remove('hidden');
+    analogClockElement.classList.remove('interactive-clock');
+    answerOptionsContainer.innerHTML = ''; // Tøm gamle knapper
+
+    let selectedMode = '';
+    let selectedDifficulty = '';
+
+    if (gameModeActive) {
+        // --- Spillmodus ---
+        selectedMode = AVAILABLE_MODES[Math.floor(Math.random() * AVAILABLE_MODES.length)];
+        selectedDifficulty = AVAILABLE_DIFFICULTIES[Math.floor(Math.random() * AVAILABLE_DIFFICULTIES.length)];
+    } else {
+        // --- Egendefinert Øving ---
+        const checkedModes = Array.from(customPracticeSettings.querySelectorAll('input[id^="mode-"]:checked')).map(cb => cb.value);
+        const checkedDifficulties = Array.from(customPracticeSettings.querySelectorAll('input[id^="diff-"]:checked')).map(cb => cb.value);
+
+        if (checkedModes.length === 0 || checkedDifficulties.length === 0) {
+            feedbackElement.textContent = "Velg minst én oppgavetype og én vanskelighetsgrad!";
+            feedbackElement.className = 'feedback incorrect';
+            // Sett en standardtid for å unngå feil, men ikke start timer?
+            displayTime(12, 0);
+            return; // Ikke fortsett
+        }
+        selectedMode = checkedModes[Math.floor(Math.random() * checkedModes.length)];
+        selectedDifficulty = checkedDifficulties[Math.floor(Math.random() * checkedDifficulties.length)];
+    }
+
+    // Generer måltiden basert på valgt vanskelighetsgrad
+    const { hour, minute } = getRandomTime(selectedDifficulty);
+    targetHour = hour;
+    targetMinute = minute;
+
+    // Sett opp oppgaven basert på valgt modus
+    if (selectedMode === 'set_analog') {
+        taskQuestion.textContent = `Still klokka til ${timeToText(targetHour, targetMinute, selectedDifficulty)}`;
+        displayTime(12, 0); // Nullstill for bruker
+        currentHour = 12;
+        currentMinute = 0;
+        answerOptionsContainer.classList.add('hidden');
+        checkAnswerButton.classList.remove('hidden');
+        analogClockElement.classList.add('interactive-clock');
+    } else if (selectedMode === 'read_analog') {
+        taskQuestion.textContent = "Hva er klokka?";
+        displayTime(targetHour, targetMinute);
+        createAnswerOptions(targetHour, targetMinute, selectedDifficulty);
+    } else {
+        taskQuestion.textContent = "Ukjent modus valgt?";
+        displayTime(12, 0);
+        answerOptionsContainer.classList.add('hidden');
+    }
+
+    startTaskTimer(); // Starter nedtellingen NÅ
 }
 
-.game-info p {
-    margin: 0 15px;
+// === HÅNDTERING AV SVAR ===
+
+function awardPointsAndCheckBonus() {
+    const timeUsed = MAX_TIME - remainingTime;
+    // Poeng: Minst 1, maks 10. Færre poeng jo lengre tid brukt.
+    const taskScore = Math.max(1, 10 - Math.floor(timeUsed));
+    score += taskScore;
+
+    // Sjekk for bonusliv
+    if (score >= lastLifeBonusScore + 100) {
+        lives++;
+        score -= 100; // Trekk fra poeng for bonuslivet
+        lastLifeBonusScore += 100; // Oppdater terskelen
+        updateLivesDisplay();
+        feedbackElement.textContent += " + Ekstra Liv! ❤️"; // Legg til i feedback
+    }
+    updateScoreDisplay();
 }
 
-.settings {
-    margin-top: 30px;
-    padding-top: 20px;
-    border-top: 1px solid #dee2e6;
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    flex-wrap: wrap;
-    align-items: center;
+// For "Les Klokka"-modus
+function handleAnswerSelection(event) {
+    if (!taskActive) return;
+    stopTaskTimer(); // Stopp timeren
+    taskActive = false;
+    const selectedAnswer = event.target.textContent;
+
+    answerOptionsContainer.querySelectorAll('button').forEach(btn => {
+        btn.disabled = true;
+        if (btn.textContent === correctAnswerString) btn.classList.add('correct-answer-display');
+        else if (btn.textContent === selectedAnswer) btn.classList.add('selected-wrong-answer');
+    });
+
+    if (selectedAnswer === correctAnswerString) {
+        feedbackElement.textContent = "Riktig! 🎉";
+        feedbackElement.className = 'feedback correct';
+        awardPointsAndCheckBonus(); // Gi poeng og sjekk bonus
+    } else {
+        feedbackElement.textContent = `Feil. Riktig var: ${correctAnswerString}`;
+        feedbackElement.className = 'feedback incorrect';
+        // Ingen poeng for feil svar
+    }
+
+    if (lives <= 0) { // Dobbeltsjekk etter poengberegning
+         gameOver();
+    } else {
+        nextTaskButton.classList.remove('hidden');
+    }
 }
 
-.settings label {
-    margin-right: 5px;
-    font-weight: bold;
+// For "Still Klokka"-modus
+function handleCheckAnswer() {
+    if (!taskActive) return;
+    stopTaskTimer(); // Stopp timeren
+    taskActive = false;
+    analogClockElement.classList.remove('interactive-clock');
+
+    const currentHour12 = currentHour % 12 === 0 ? 12 : currentHour % 12;
+    const targetHour12 = targetHour % 12 === 0 ? 12 : targetHour % 12;
+
+    // Streng sjekk: Både time og minutt må være helt likt
+    if (currentHour12 === targetHour12 && currentMinute === targetMinute) {
+        feedbackElement.textContent = "Riktig stilt! 👍";
+        feedbackElement.className = 'feedback correct';
+        awardPointsAndCheckBonus(); // Gi poeng og sjekk bonus
+    } else {
+        // Hent vanskelighetsgrad for korrekt tekstvisning
+         const difficultyForText = gameModeActive ? '5' : Array.from(customPracticeSettings.querySelectorAll('input[id^="diff-"]:checked')).map(cb => cb.value).sort().pop() || '5'; // Høyeste valgte, eller 5
+        feedbackElement.textContent = `Nesten! Du stilte ${timeToText(currentHour, currentMinute, difficultyForText)}. Riktig var ${timeToText(targetHour, targetMinute, difficultyForText)}.`;
+        feedbackElement.className = 'feedback incorrect';
+        setAnalogTime(targetHour, targetMinute); // Vis riktig svar
+        setDigitalTime(targetHour, targetMinute);
+        // Ingen poeng for feil svar
+    }
+
+    checkAnswerButton.classList.add('hidden');
+     if (lives <= 0) { // Dobbeltsjekk etter poengberegning
+         gameOver();
+     } else {
+         nextTaskButton.classList.remove('hidden');
+     }
 }
 
-.settings select {
-    padding: 8px 12px;
-    font-size: 1em;
-    border-radius: 5px;
-    border: 1px solid #ced4da;
+// === GAME OVER ===
+
+function gameOver() {
+    isGameOver = true;
+    stopTaskTimer();
+    taskActive = false;
+    finalScoreElement.textContent = score;
+    gameOverMessage.classList.remove('hidden');
+    nextTaskButton.classList.add('hidden'); // Skjul "Neste"
+    checkAnswerButton.classList.add('hidden');
+    answerOptionsContainer.innerHTML = ''; // Tøm eventuelle knapper
+    analogClockElement.classList.remove('interactive-clock');
+    taskQuestion.textContent = "Spillet er over";
 }
 
-.action-button {
-     padding: 12px 25px;
-     font-size: 1.2em;
-     font-weight: bold;
-     color: var(--text-color);
-     background-color: var(--button-action-bg);
-     border: none;
-     border-radius: 8px;
-     cursor: pointer;
-     transition: background-color 0.2s ease, transform 0.1s ease;
-}
-.action-button:hover {
-    background-color: var(--button-action-hover);
-    transform: translateY(-2px);
+
+// === DRA-OG-SLIPP === (Samme som før, men sjekker `taskActive`)
+
+function getAngle(event) {
+    // ... (samme som før) ...
+     const rect = analogClockElement.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const mouseX = event.clientX;
+    const mouseY = event.clientY;
+    let angle = Math.atan2(mouseY - centerY, mouseX - centerX) * (180 / Math.PI);
+    angle = (angle + 90 + 360) % 360;
+    return angle;
 }
 
-.hidden {
-    display: none !important;
+function handleMouseDown(event) {
+    if (!taskActive || isGameOver || gameModeSelect.value === 'read_analog' || !analogClockElement.classList.contains('interactive-clock')) return;
+    event.preventDefault();
+    const angle = getAngle(event);
+
+    // Forenklet valg av viser basert på vinkel (kan forbedres)
+     const minuteAngle = (currentMinute / 60) * 360;
+    let currentHour12 = currentHour % 12;
+    const hourAngle = ((currentHour12 / 12) * 360) + (currentMinute / 60) * 30;
+
+    const diffMinute = Math.min(Math.abs(angle - minuteAngle), 360 - Math.abs(angle - minuteAngle));
+    const diffHour = Math.min(Math.abs(angle - hourAngle), 360 - Math.abs(angle - hourAngle));
+
+    if (diffMinute < diffHour && diffMinute < 40) { // Økt toleranse litt
+         draggedHand = 'minute';
+    } else if (diffHour < 50) { // Økt toleranse litt
+         draggedHand = 'hour';
+    } else {
+        draggedHand = null;
+        return;
+    }
+    isDragging = true;
+    analogClockElement.style.cursor = 'grabbing';
 }
+
+function handleMouseMove(event) {
+    if (!isDragging || !taskActive || isGameOver) return;
+
+    const angle = getAngle(event);
+    let newHour = currentHour;
+    let newMinute = currentMinute;
+
+    if (draggedHand === 'minute') {
+        newMinute = Math.round((angle / 360) * 60) % 60;
+        // La time være som den var, displayTime() justerer den visuelt
+        newHour = currentHour;
+    } else if (draggedHand === 'hour') {
+        // Mer presis timeberegning basert på vinkel
+        let preciseHour12 = (angle / 360) * 12;
+         // Timeviserens posisjon påvirkes OGSÅ av eksisterende minutt når vi IKKE drar minuttviseren
+         // Vi må trekke fra minuttpåvirkningen for å finne den "rene" timeverdien fra vinkelen
+         let minuteContributionToHourAngle = (currentMinute / 60) * 30; // 30 grader per time
+         let hourAngleWithoutMinutes = (angle - (minuteContributionToHourAngle % 360) + 360) % 360;
+         preciseHour12 = (hourAngleWithoutMinutes / 360) * 12;
+
+        newHour = Math.round(preciseHour12);
+        // Juster for 24-timers format internt (0-23) basert på rundet 12-timers verdi
+         // Behold AM/PM fra currentHour? Anta at brukeren ikke bytter AM/PM ved å dra timeviser alene.
+         let baseHour = Math.floor(currentHour / 12) * 12; // 0 for AM, 12 for PM
+         let hour12 = newHour % 12;
+         if (hour12 === 0) hour12 = 12; // 0 blir 12
+         // Foreløpig enkel løsning: behold AM/PM
+         // En bedre løsning krever mer info om brukerens intensjon
+         newHour = baseHour + hour12 % 12; // Holder seg innenfor samme 12-timers blokk
+         if (newHour === 12) newHour = 0; // Korriger 12 AM til 0
+         if (newHour === 0 && baseHour === 12) newHour = 12; // Korriger 12 PM
+
+        newMinute = currentMinute; // Beholder minuttet ved timedrag
+    }
+
+    if (newHour !== currentHour || newMinute !== currentMinute) {
+       displayTime(newHour, newMinute);
+    }
+}
+
+
+function handleMouseUp(event) {
+    if (!isDragging) return;
+    isDragging = false;
+    draggedHand = null;
+    if (taskActive && analogClockElement.classList.contains('interactive-clock') && !isGameOver) {
+       analogClockElement.style.cursor = 'grab';
+    } else {
+        analogClockElement.style.cursor = 'default';
+    }
+}
+
+// === EVENT LISTENERS ===
+gameModeSelect.addEventListener('change', (e) => {
+    toggleCustomSettings(e.target.value === 'custom');
+    // Start på nytt når man bytter modus? Eller bare neste oppgave? La oss starte på nytt.
+    initializeGame();
+});
+
+// Legg til listeners for checkboxes hvis du vil at spillet skal restarte ved endring
+customPracticeSettings.addEventListener('change', (e) => {
+    // Hvis en checkbox endres, og vi er i custom mode, start på nytt?
+    if (e.target.type === 'checkbox' && gameModeSelect.value === 'custom') {
+        // Valgfritt: Kan bare generere ny oppgave ELLER restarte helt.
+        // initializeGame(); // Restarter score, liv etc.
+         generateNewTask(); // Bare lager ny oppgave med nye innstillinger
+    }
+});
+
+
+nextTaskButton.addEventListener('click', generateNewTask);
+checkAnswerButton.addEventListener('click', handleCheckAnswer);
+restartButton.addEventListener('click', initializeGame);
+
+// Dra-og-slipp listeners
+analogClockElement.addEventListener('mousedown', handleMouseDown);
+document.addEventListener('mousemove', handleMouseMove);
+document.addEventListener('mouseup', handleMouseUp);
+analogClockElement.addEventListener('mouseleave', handleMouseUp); // Stopp hvis mus går ut
+
+
+// === START SPILLET ===
+initializeGame(); // Kall denne for å sette opp alt ved start
