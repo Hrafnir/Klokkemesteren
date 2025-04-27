@@ -2,7 +2,7 @@
 const analogClockElement = document.getElementById('analog-clock');
 const hourHand = document.getElementById('hour-hand');
 const minuteHand = document.getElementById('minute-hand');
-const digitalClockDisplay = document.getElementById('digital-clock-display'); // Endret ID
+const digitalClockDisplay = document.getElementById('digital-clock-display');
 const digitalHour = document.getElementById('digital-hour');
 const digitalMinute = document.getElementById('digital-minute');
 const taskQuestion = document.getElementById('task-question');
@@ -10,36 +10,83 @@ const answerOptionsContainer = document.getElementById('answer-options');
 const checkAnswerButton = document.getElementById('check-answer-button');
 const feedbackElement = document.getElementById('feedback');
 const scoreElement = document.getElementById('score');
-// const levelElement = document.getElementById('level');
-const modeSelect = document.getElementById('mode-select');
-const difficultySelect = document.getElementById('difficulty-select');
+const livesDisplay = document.getElementById('lives-display'); // NY
+const timerDisplay = document.getElementById('timer-display'); // NY
 const nextTaskButton = document.getElementById('next-task-button');
+const gameOverMessage = document.getElementById('game-over-message'); // NY
+const finalScoreElement = document.getElementById('final-score'); // NY
+const restartButton = document.getElementById('restart-button'); // NY
+const gameModeSelect = document.getElementById('game-mode-select'); // NY (erstatter modeSelect)
+const customPracticeSettings = document.getElementById('custom-practice-settings'); // NY
+// Checkboxes (hentes dynamisk ved behov)
 
 // --- Spillstatus ---
 let score = 0;
-let currentHour = 0; // Nåværende time klokka VISER (kan endres av bruker)
-let currentMinute = 0; // Nåværende minutt klokka VISER (kan endres av bruker)
-let targetHour = 0; // Mål-time for "Still klokka"
-let targetMinute = 0; // Mål-minutt for "Still klokka"
-let correctAnswerString = ""; // Tekstlig korrekt svar for "Les klokka"
-let taskActive = true;
+let lives = 3; // Start med 3 liv
+const MAX_TIME = 15; // Sekunder per oppgave
+let remainingTime = MAX_TIME;
+let taskTimerInterval = null; // Holder ID for setInterval
+let taskActive = false; // Er en oppgave i gang?
+let gameModeActive = true; // Er vi i Spillmodus?
+let lastLifeBonusScore = 0; // Holder styr på når siste bonusliv ble gitt
+let isGameOver = false;
+
+// --- Mål og Nåværende Tid ---
+let currentHour = 0;
+let currentMinute = 0;
+let targetHour = 0;
+let targetMinute = 0;
+let correctAnswerString = "";
 
 // --- Dra-status ---
 let isDragging = false;
-let draggedHand = null; // 'hour' or 'minute'
+let draggedHand = null;
 
-// --- Hjelpefunksjoner ---
+// --- Tilgjengelige Moduser & Nivåer ---
+const AVAILABLE_MODES = ['read_analog', 'set_analog']; // Utvid denne når nye moduser lages
+const AVAILABLE_DIFFICULTIES = ['1', '2', '3', '4', '5'];
+
+
+// === INITIALISERING & GRUNNFUNKSJONER ===
+
+function initializeGame() {
+    score = 0;
+    lives = 3;
+    lastLifeBonusScore = 0;
+    isGameOver = false;
+    updateScoreDisplay();
+    updateLivesDisplay();
+    gameOverMessage.classList.add('hidden');
+    nextTaskButton.classList.add('hidden'); // Skjul i starten
+    checkAnswerButton.classList.add('hidden');
+    // Sjekk hvilken spilltype som er valgt ved start
+    toggleCustomSettings(gameModeSelect.value === 'custom');
+    generateNewTask();
+}
+
+function updateScoreDisplay() {
+    scoreElement.textContent = score;
+}
+
+function updateLivesDisplay() {
+    livesDisplay.textContent = '❤️'.repeat(Math.max(0, lives)); // Vis hjerter
+}
+
+function toggleCustomSettings(show) {
+    gameModeActive = !show;
+    if (show) {
+        customPracticeSettings.classList.remove('hidden');
+    } else {
+        customPracticeSettings.classList.add('hidden');
+    }
+}
+
+// === KLOKKEFUNKSJONER === (Samme som før, ingen store endringer her)
 
 function setAnalogTime(hour, minute) {
-    // Korrigerer for 12 vs 0
     const displayHour = hour % 12;
-
-    // Presis vinkelkalkulering
     const minuteDeg = (minute / 60) * 360;
-    // Timeviseren påvirkes av minuttene
-    const hourDeg = ((displayHour / 12) * 360) + ((minute / 60) * 30); // 30 grader per time
-
-    // +90 fordi 0 grader er klokka 3 i CSS transform, vi vil starte på 12
+    const hourDeg = ((displayHour / 12) * 360) + ((minute / 60) * 30);
     minuteHand.style.transform = `translateY(-50%) rotate(${minuteDeg + 90}deg)`;
     hourHand.style.transform = `translateY(-50%) rotate(${hourDeg + 90}deg)`;
 }
@@ -49,46 +96,22 @@ function formatTwoDigits(number) {
 }
 
 function setDigitalTime(hour, minute) {
-     // Viser 1-12 på digital klokke for konsistens med analog, men kan endres
-     // let displayHourDigital = hour % 12;
-     // if (displayHourDigital === 0) displayHourDigital = 12;
-     // La oss bruke 24-timers for digital for å være tydelig
      digitalHour.textContent = formatTwoDigits(hour % 24);
      digitalMinute.textContent = formatTwoDigits(minute);
 }
 
-// Oppdaterer BEGGE klokker OG de globale currentHour/Minute
 function displayTime(hour, minute) {
-    currentHour = Math.round(hour); // Lagre avrundet time
-    currentMinute = Math.round(minute); // Lagre avrundet minutt
+    currentHour = Math.round(hour);
+    currentMinute = Math.round(minute);
     setAnalogTime(currentHour, currentMinute);
     setDigitalTime(currentHour, currentMinute);
 }
 
-
-function getRandomTime(difficulty) {
-    let hour = 0;
-    let minute = 0;
-
-    switch (difficulty) {
-        case '1': minute = 0; break;
-        case '2': minute = 30; break;
-        case '3': minute = Math.random() < 0.5 ? 15 : 45; break;
-        case '4': minute = Math.floor(Math.random() * 12) * 5; break;
-        case '5': minute = Math.floor(Math.random() * 60); break;
-        default: minute = 0;
-    }
-    // Generer en tilfeldig time mellom 1 og 12 for oppgaver
-    hour = Math.floor(Math.random() * 12) + 1;
-
-    return { hour, minute };
-}
-
-function timeToText(hour, minute, difficulty) {
-    // Sørg for at vi bruker 1-12 for tekst-representasjon
+function timeToText(hour, minute, difficultyLevel) {
+    // Konverterer tallverdi (1-5) til et minimumsnivå for tekstformat
+    const difficulty = parseInt(difficultyLevel, 10);
     let displayHour = hour % 12;
-    if (displayHour === 0) displayHour = 12; // Kl 0 er 12 AM/PM
-
+    if (displayHour === 0) displayHour = 12;
     let nextHour = (displayHour % 12) + 1;
 
     if (minute === 0 && difficulty >= 1) return `Klokka ${displayHour}`;
@@ -96,20 +119,18 @@ function timeToText(hour, minute, difficulty) {
     if (minute === 15 && difficulty >= 3) return `Kvart over ${displayHour}`;
     if (minute === 45 && difficulty >= 3) return `Kvart på ${nextHour}`;
 
-    // Mer detaljert tekst for høyere nivåer
     if (difficulty >= 4) {
         if (minute === 5) return `Fem over ${displayHour}`;
         if (minute === 10) return `Ti over ${displayHour}`;
-        if (minute === 20) return `Ti på halv ${nextHour}`; // 20 min = 10 min før halv
+        if (minute === 20) return `Ti på halv ${nextHour}`;
         if (minute === 25) return `Fem på halv ${nextHour}`;
         if (minute === 35) return `Fem over halv ${nextHour}`;
-        if (minute === 40) return `Ti over halv ${nextHour}`; // Eller "Tjue på neste"
+        if (minute === 40) return `Ti over halv ${nextHour}`;
         if (minute === 50) return `Ti på ${nextHour}`;
         if (minute === 55) return `Fem på ${nextHour}`;
     }
 
-    // Fallback for minutter som ikke har spesielle navn (eller lav vanskelighetsgrad)
-     if (minute !== 0 && minute !== 15 && minute !== 30 && minute !== 45) {
+     if (difficulty >= 5 && minute !== 0 && minute !== 15 && minute !== 30 && minute !== 45) {
          if (minute < 30) {
             return `${minute} ${minute === 1 ? 'minutt' : 'minutter'} over ${displayHour}`;
          } else {
@@ -117,38 +138,55 @@ function timeToText(hour, minute, difficulty) {
          }
      }
 
-
-    // Siste fallback (bør egentlig ikke nås med logikken over)
+    // Fallback hvis ingen tekst passer (f.eks. nivå 1 ber om 05 min)
     return `${displayHour}:${formatTwoDigits(minute)}`;
 }
 
 
+// === OPPGAVEGENERERING ===
+
+function getRandomTime(difficulty) {
+    let hour = 0;
+    let minute = 0;
+    difficulty = difficulty.toString(); // Sørg for at det er en streng
+
+    switch (difficulty) {
+        case '1': minute = 0; break;
+        case '2': minute = 30; break;
+        case '3': minute = Math.random() < 0.5 ? 15 : 45; break;
+        case '4': minute = Math.floor(Math.random() * 12) * 5; break;
+        case '5': minute = Math.floor(Math.random() * 60); break;
+        default: minute = 0; // Fallback
+    }
+    hour = Math.floor(Math.random() * 12) + 1; // 1-12
+    return { hour, minute };
+}
+
 function createAnswerOptions(correctHour, correctMinute, difficulty) {
+    // ... (Samme logikk som før for å lage knapper) ...
     answerOptionsContainer.innerHTML = '';
-    const options = new Set(); // Bruk Set for å enkelt sikre unike svar
+    const options = new Set();
     correctAnswerString = timeToText(correctHour, correctMinute, difficulty);
     options.add(correctAnswerString);
 
-    // Generer gale svaralternativer
     let attempts = 0;
-    while (options.size < 4 && attempts < 20) { // Legg til forsøksgrense
+    while (options.size < 4 && attempts < 30) { // Økt grense litt
+        // Viktig: Generer feil svar basert på SAMME vanskelighetsgrad
         const randomTime = getRandomTime(difficulty);
-        // Sjekk om tiden faktisk er forskjellig fra den korrekte
         if (randomTime.hour !== correctHour || randomTime.minute !== correctMinute) {
             const wrongAnswerString = timeToText(randomTime.hour, randomTime.minute, difficulty);
-             // Legg til kun hvis teksten er unik
              if(!options.has(wrongAnswerString)){
                  options.add(wrongAnswerString);
              }
         }
         attempts++;
     }
-     // Hvis vi fortsatt ikke har 4 alternativer, fyll på med enkle feil hvis mulig
-     while (options.size < 4 && attempts < 40) {
+     // Fyll på med enkle feil om nødvendig
+     while (options.size < 4 && attempts < 50) {
          const randH = Math.floor(Math.random() * 12) + 1;
-         const randM = Math.floor(Math.random() * 12) * 5; // Enkle 5-min feil
+         const randM = Math.floor(Math.random() * 12) * 5;
           if (randH !== correctHour || randM !== correctMinute) {
-              const wrongAnswerString = timeToText(randH, randM, Math.max(difficulty, 4)); // Bruk minst nivå 4 for tekst
+              const wrongAnswerString = timeToText(randH, randM, Math.max(parseInt(difficulty, 10), 4));
                if(!options.has(wrongAnswerString)){
                  options.add(wrongAnswerString);
              }
@@ -156,236 +194,347 @@ function createAnswerOptions(correctHour, correctMinute, difficulty) {
          attempts++;
      }
 
-
-    // Konverter Set til Array og bland
     const optionsArray = Array.from(options);
     optionsArray.sort(() => Math.random() - 0.5);
 
-    // Lag knapper
     optionsArray.forEach(optionText => {
         const button = document.createElement('button');
         button.textContent = optionText;
-        button.addEventListener('click', handleAnswerSelection); // Endret navn for klarhet
+        button.addEventListener('click', handleAnswerSelection);
         answerOptionsContainer.appendChild(button);
     });
 }
 
-// --- Spillflyt ---
+// === TIMER OG SPILLFLYT ===
 
-function generateNewTask() {
-    taskActive = true;
-    feedbackElement.textContent = '';
-    feedbackElement.className = 'feedback';
-    nextTaskButton.classList.add('hidden');
-    checkAnswerButton.classList.add('hidden'); // Skjul denne også som standard
-    answerOptionsContainer.classList.remove('hidden'); // Vis svaralternativer som standard
-    analogClockElement.classList.remove('interactive-clock'); // Ikke interaktiv som standard
+function startTaskTimer() {
+    stopTaskTimer(); // Stopp eventuell gammel timer
+    remainingTime = MAX_TIME;
+    timerDisplay.textContent = remainingTime;
+    timerDisplay.classList.remove('low-time');
+    taskActive = true; // Oppgaven starter NÅ
 
-    // Sørg for at gamle svar-knapper er borte
-    answerOptionsContainer.innerHTML = '';
+    taskTimerInterval = setInterval(() => {
+        remainingTime--;
+        timerDisplay.textContent = remainingTime;
 
-    const difficulty = difficultySelect.value;
-    const mode = modeSelect.value;
+        if (remainingTime <= 5) {
+            timerDisplay.classList.add('low-time');
+        } else {
+            timerDisplay.classList.remove('low-time');
+        }
 
-    // Generer måltiden
-    const { hour, minute } = getRandomTime(difficulty);
-    targetHour = hour; // Lagre måltiden for "Still klokka"
-    targetMinute = minute;
+        if (remainingTime <= 0) {
+            handleTimeout();
+        }
+    }, 1000); // Kjør hvert sekund
+}
 
-    if (mode === 'set_analog') {
-        taskQuestion.textContent = `Still klokka til ${timeToText(targetHour, targetMinute, difficulty)}`;
-        // Nullstill klokka visuelt for brukeren å stille inn
-        displayTime(12, 0); // Starter på 12:00
-        currentHour = 12; // Viktig å nullstille current også
-        currentMinute = 0;
-        answerOptionsContainer.classList.add('hidden'); // Skjul svaralternativer
-        checkAnswerButton.classList.remove('hidden'); // Vis "Sjekk Svaret"-knapp
-        analogClockElement.classList.add('interactive-clock'); // Gjør klokka klikkbar/dra-bar
+function stopTaskTimer() {
+    clearInterval(taskTimerInterval);
+    taskTimerInterval = null;
+}
 
-    } else if (mode === 'read_analog') {
-        taskQuestion.textContent = "Hva er klokka?";
-        displayTime(targetHour, targetMinute); // Vis den genererte tiden
-        createAnswerOptions(targetHour, targetMinute, difficulty);
+function handleTimeout() {
+    if (!taskActive) return; // Ikke gjør noe hvis oppgaven allerede er besvart/avbrutt
+    stopTaskTimer();
+    taskActive = false;
+    lives--;
+    updateLivesDisplay();
+    feedbackElement.textContent = "⏰ Tiden er ute!";
+    feedbackElement.className = 'feedback incorrect';
+    analogClockElement.classList.remove('interactive-clock');
+    checkAnswerButton.classList.add('hidden');
+    // Deaktiver svaralternativer hvis de finnes
+    answerOptionsContainer.querySelectorAll('button').forEach(btn => btn.disabled = true);
 
+    if (lives <= 0) {
+        gameOver();
     } else {
-        // Fallback for ikke-implementerte moduser
-        taskQuestion.textContent = "Modus ikke implementert";
-        displayTime(12, 0);
-        answerOptionsContainer.classList.add('hidden');
+        nextTaskButton.classList.remove('hidden');
     }
 }
 
-// --- Hendelseshåndterere ---
+function generateNewTask() {
+    if (isGameOver) return; // Ikke start ny oppgave hvis spillet er over
+
+    stopTaskTimer(); // Stopp forrige timer
+    taskActive = false; // Midlertidig inaktiv mens vi setter opp
+    feedbackElement.textContent = '';
+    feedbackElement.className = 'feedback';
+    nextTaskButton.classList.add('hidden');
+    checkAnswerButton.classList.add('hidden');
+    answerOptionsContainer.classList.remove('hidden');
+    analogClockElement.classList.remove('interactive-clock');
+    answerOptionsContainer.innerHTML = ''; // Tøm gamle knapper
+
+    let selectedMode = '';
+    let selectedDifficulty = '';
+
+    if (gameModeActive) {
+        // --- Spillmodus ---
+        selectedMode = AVAILABLE_MODES[Math.floor(Math.random() * AVAILABLE_MODES.length)];
+        selectedDifficulty = AVAILABLE_DIFFICULTIES[Math.floor(Math.random() * AVAILABLE_DIFFICULTIES.length)];
+    } else {
+        // --- Egendefinert Øving ---
+        const checkedModes = Array.from(customPracticeSettings.querySelectorAll('input[id^="mode-"]:checked')).map(cb => cb.value);
+        const checkedDifficulties = Array.from(customPracticeSettings.querySelectorAll('input[id^="diff-"]:checked')).map(cb => cb.value);
+
+        if (checkedModes.length === 0 || checkedDifficulties.length === 0) {
+            feedbackElement.textContent = "Velg minst én oppgavetype og én vanskelighetsgrad!";
+            feedbackElement.className = 'feedback incorrect';
+            // Sett en standardtid for å unngå feil, men ikke start timer?
+            displayTime(12, 0);
+            return; // Ikke fortsett
+        }
+        selectedMode = checkedModes[Math.floor(Math.random() * checkedModes.length)];
+        selectedDifficulty = checkedDifficulties[Math.floor(Math.random() * checkedDifficulties.length)];
+    }
+
+    // Generer måltiden basert på valgt vanskelighetsgrad
+    const { hour, minute } = getRandomTime(selectedDifficulty);
+    targetHour = hour;
+    targetMinute = minute;
+
+    // Sett opp oppgaven basert på valgt modus
+    if (selectedMode === 'set_analog') {
+        taskQuestion.textContent = `Still klokka til ${timeToText(targetHour, targetMinute, selectedDifficulty)}`;
+        displayTime(12, 0); // Nullstill for bruker
+        currentHour = 12;
+        currentMinute = 0;
+        answerOptionsContainer.classList.add('hidden');
+        checkAnswerButton.classList.remove('hidden');
+        analogClockElement.classList.add('interactive-clock');
+    } else if (selectedMode === 'read_analog') {
+        taskQuestion.textContent = "Hva er klokka?";
+        displayTime(targetHour, targetMinute);
+        createAnswerOptions(targetHour, targetMinute, selectedDifficulty);
+    } else {
+        taskQuestion.textContent = "Ukjent modus valgt?";
+        displayTime(12, 0);
+        answerOptionsContainer.classList.add('hidden');
+    }
+
+    startTaskTimer(); // Starter nedtellingen NÅ
+}
+
+// === HÅNDTERING AV SVAR ===
+
+function awardPointsAndCheckBonus() {
+    const timeUsed = MAX_TIME - remainingTime;
+    // Poeng: Minst 1, maks 10. Færre poeng jo lengre tid brukt.
+    const taskScore = Math.max(1, 10 - Math.floor(timeUsed));
+    score += taskScore;
+
+    // Sjekk for bonusliv
+    if (score >= lastLifeBonusScore + 100) {
+        lives++;
+        score -= 100; // Trekk fra poeng for bonuslivet
+        lastLifeBonusScore += 100; // Oppdater terskelen
+        updateLivesDisplay();
+        feedbackElement.textContent += " + Ekstra Liv! ❤️"; // Legg til i feedback
+    }
+    updateScoreDisplay();
+}
 
 // For "Les Klokka"-modus
 function handleAnswerSelection(event) {
     if (!taskActive) return;
+    stopTaskTimer(); // Stopp timeren
     taskActive = false;
     const selectedAnswer = event.target.textContent;
 
-    // Deaktiver knapper og gi visuell feedback
     answerOptionsContainer.querySelectorAll('button').forEach(btn => {
         btn.disabled = true;
-        if (btn.textContent === correctAnswerString) {
-            btn.classList.add('correct-answer-display'); // Grønn og markert
-        } else if (btn.textContent === selectedAnswer) {
-            btn.classList.add('selected-wrong-answer'); // Rød/nedtonet
-        }
+        if (btn.textContent === correctAnswerString) btn.classList.add('correct-answer-display');
+        else if (btn.textContent === selectedAnswer) btn.classList.add('selected-wrong-answer');
     });
 
     if (selectedAnswer === correctAnswerString) {
         feedbackElement.textContent = "Riktig! 🎉";
         feedbackElement.className = 'feedback correct';
-        score++;
-        scoreElement.textContent = score;
+        awardPointsAndCheckBonus(); // Gi poeng og sjekk bonus
     } else {
         feedbackElement.textContent = `Feil. Riktig var: ${correctAnswerString}`;
         feedbackElement.className = 'feedback incorrect';
+        // Ingen poeng for feil svar
     }
-    nextTaskButton.classList.remove('hidden');
+
+    if (lives <= 0) { // Dobbeltsjekk etter poengberegning
+         gameOver();
+    } else {
+        nextTaskButton.classList.remove('hidden');
+    }
 }
 
 // For "Still Klokka"-modus
 function handleCheckAnswer() {
     if (!taskActive) return;
+    stopTaskTimer(); // Stopp timeren
     taskActive = false;
-    analogClockElement.classList.remove('interactive-clock'); // Ikke interaktiv lenger
+    analogClockElement.classList.remove('interactive-clock');
 
-    // Sammenlign currentHour/Minute (satt av bruker) med targetHour/Minute
-    // Tillat litt slingringsmonn? Nei, la oss være nøyaktige for nå.
-    // Merk: Sammenlign timer etter modulo 12 for å håndtere 12 vs 0 riktig.
     const currentHour12 = currentHour % 12 === 0 ? 12 : currentHour % 12;
     const targetHour12 = targetHour % 12 === 0 ? 12 : targetHour % 12;
 
-    console.log(`Sjekker: Stilt=${currentHour12}:${currentMinute} vs Mål=${targetHour12}:${targetMinute}`);
-
-
+    // Streng sjekk: Både time og minutt må være helt likt
     if (currentHour12 === targetHour12 && currentMinute === targetMinute) {
         feedbackElement.textContent = "Riktig stilt! 👍";
         feedbackElement.className = 'feedback correct';
-        score++;
-        scoreElement.textContent = score;
+        awardPointsAndCheckBonus(); // Gi poeng og sjekk bonus
     } else {
-        feedbackElement.textContent = `Nesten! Du stilte ${timeToText(currentHour, currentMinute, 5)}. Riktig var ${timeToText(targetHour, targetMinute, 5)}.`;
+        // Hent vanskelighetsgrad for korrekt tekstvisning
+         const difficultyForText = gameModeActive ? '5' : Array.from(customPracticeSettings.querySelectorAll('input[id^="diff-"]:checked')).map(cb => cb.value).sort().pop() || '5'; // Høyeste valgte, eller 5
+        feedbackElement.textContent = `Nesten! Du stilte ${timeToText(currentHour, currentMinute, difficultyForText)}. Riktig var ${timeToText(targetHour, targetMinute, difficultyForText)}.`;
         feedbackElement.className = 'feedback incorrect';
-        // Vis den korrekte tiden etter feil svar
-        setAnalogTime(targetHour, targetMinute); // Korriger viserne
-        setDigitalTime(targetHour, targetMinute); // Korriger digital
+        setAnalogTime(targetHour, targetMinute); // Vis riktig svar
+        setDigitalTime(targetHour, targetMinute);
+        // Ingen poeng for feil svar
     }
-    checkAnswerButton.classList.add('hidden'); // Skjul sjekk-knapp
-    nextTaskButton.classList.remove('hidden'); // Vis neste-knapp
+
+    checkAnswerButton.classList.add('hidden');
+     if (lives <= 0) { // Dobbeltsjekk etter poengberegning
+         gameOver();
+     } else {
+         nextTaskButton.classList.remove('hidden');
+     }
+}
+
+// === GAME OVER ===
+
+function gameOver() {
+    isGameOver = true;
+    stopTaskTimer();
+    taskActive = false;
+    finalScoreElement.textContent = score;
+    gameOverMessage.classList.remove('hidden');
+    nextTaskButton.classList.add('hidden'); // Skjul "Neste"
+    checkAnswerButton.classList.add('hidden');
+    answerOptionsContainer.innerHTML = ''; // Tøm eventuelle knapper
+    analogClockElement.classList.remove('interactive-clock');
+    taskQuestion.textContent = "Spillet er over";
 }
 
 
-// --- Dra-og-slipp Håndtering ---
+// === DRA-OG-SLIPP === (Samme som før, men sjekker `taskActive`)
 
 function getAngle(event) {
-    const rect = analogClockElement.getBoundingClientRect();
-    // Finn senter av klokka relativt til viewport
+    // ... (samme som før) ...
+     const rect = analogClockElement.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
-    // Finn musens posisjon relativt til viewport
     const mouseX = event.clientX;
     const mouseY = event.clientY;
-    // Kalkuler vinkel fra senter til mus
     let angle = Math.atan2(mouseY - centerY, mouseX - centerX) * (180 / Math.PI);
-    // Juster vinkelen slik at 0 grader er "opp" (klokka 12)
     angle = (angle + 90 + 360) % 360;
     return angle;
 }
 
 function handleMouseDown(event) {
-    if (modeSelect.value !== 'set_analog' || !taskActive) return; // Kun i riktig modus og aktiv oppgave
-    event.preventDefault(); // Forhindre standard tekstmarkering etc.
-
+    if (!taskActive || isGameOver || gameModeSelect.value === 'read_analog' || !analogClockElement.classList.contains('interactive-clock')) return;
+    event.preventDefault();
     const angle = getAngle(event);
 
-    // Enkel logikk for å velge viser: Sjekk hvilken vinkel den peker mot
-    // (Dette er ikke perfekt, kan forbedres ved å sjekke avstand til visertupp)
-    const minuteAngle = (currentMinute / 60) * 360;
-    const hourAngle = ((currentHour % 12) / 12) * 360 + (currentMinute / 60) * 30;
+    // Forenklet valg av viser basert på vinkel (kan forbedres)
+     const minuteAngle = (currentMinute / 60) * 360;
+    let currentHour12 = currentHour % 12;
+    const hourAngle = ((currentHour12 / 12) * 360) + (currentMinute / 60) * 30;
 
-    // Beregn vinkelforskjell (ta hensyn til sirkelen)
     const diffMinute = Math.min(Math.abs(angle - minuteAngle), 360 - Math.abs(angle - minuteAngle));
     const diffHour = Math.min(Math.abs(angle - hourAngle), 360 - Math.abs(angle - hourAngle));
 
-    // Velg den viseren som er nærmest vinkelmessig (med en toleranse)
-    if (diffMinute < diffHour && diffMinute < 30) { // Lavere terskel for minuttviser?
+    if (diffMinute < diffHour && diffMinute < 40) { // Økt toleranse litt
          draggedHand = 'minute';
-    } else if (diffHour < 45) { // Større toleranse for timeviser?
+    } else if (diffHour < 50) { // Økt toleranse litt
          draggedHand = 'hour';
     } else {
-        draggedHand = null; // Klikket ikke nær nok en viser
+        draggedHand = null;
         return;
     }
-
     isDragging = true;
-    analogClockElement.style.cursor = 'grabbing'; // Vis at noe dras
-    // console.log("Start dragging:", draggedHand);
-
-    // Flytt logikken for bevegelse til mousemove for å unngå "hopp" ved første klikk
-    // handleMouseMove(event); // Kall en gang for å sette posisjon umiddelbart?
+    analogClockElement.style.cursor = 'grabbing';
 }
 
 function handleMouseMove(event) {
-    if (!isDragging || !taskActive) return;
+    if (!isDragging || !taskActive || isGameOver) return;
 
     const angle = getAngle(event);
     let newHour = currentHour;
     let newMinute = currentMinute;
 
     if (draggedHand === 'minute') {
-        newMinute = Math.round((angle / 360) * 60) % 60; // Rund av til nærmeste minutt
-        // Når minuttviseren dras, oppdater timeviseren litt også
-         newHour = currentHour; // Behold timen, men den visuelle posisjonen justeres i displayTime
+        newMinute = Math.round((angle / 360) * 60) % 60;
+        // La time være som den var, displayTime() justerer den visuelt
+        newHour = currentHour;
     } else if (draggedHand === 'hour') {
-        // Konverter vinkel til time (0-11.99~)
-        let preciseHour = (angle / 360) * 12;
-        // Rund av til nærmeste *hele* time for brukerens input? Eller la den være presis?
-        // La oss runde av til nærmeste time for nå.
-        newHour = Math.round(preciseHour);
-        if (newHour === 0) newHour = 12; // Håndter midnatt/middag som 12
-        // Når timeviseren dras, behold minuttet som det var? Eller nullstill? La oss beholde.
-        newMinute = currentMinute;
-         // Den *visuelle* posisjonen vil justeres av displayTime basert på minuttet også
+        // Mer presis timeberegning basert på vinkel
+        let preciseHour12 = (angle / 360) * 12;
+         // Timeviserens posisjon påvirkes OGSÅ av eksisterende minutt når vi IKKE drar minuttviseren
+         // Vi må trekke fra minuttpåvirkningen for å finne den "rene" timeverdien fra vinkelen
+         let minuteContributionToHourAngle = (currentMinute / 60) * 30; // 30 grader per time
+         let hourAngleWithoutMinutes = (angle - (minuteContributionToHourAngle % 360) + 360) % 360;
+         preciseHour12 = (hourAngleWithoutMinutes / 360) * 12;
+
+        newHour = Math.round(preciseHour12);
+        // Juster for 24-timers format internt (0-23) basert på rundet 12-timers verdi
+         // Behold AM/PM fra currentHour? Anta at brukeren ikke bytter AM/PM ved å dra timeviser alene.
+         let baseHour = Math.floor(currentHour / 12) * 12; // 0 for AM, 12 for PM
+         let hour12 = newHour % 12;
+         if (hour12 === 0) hour12 = 12; // 0 blir 12
+         // Foreløpig enkel løsning: behold AM/PM
+         // En bedre løsning krever mer info om brukerens intensjon
+         newHour = baseHour + hour12 % 12; // Holder seg innenfor samme 12-timers blokk
+         if (newHour === 12) newHour = 0; // Korriger 12 AM til 0
+         if (newHour === 0 && baseHour === 12) newHour = 12; // Korriger 12 PM
+
+        newMinute = currentMinute; // Beholder minuttet ved timedrag
     }
 
-
-    // Unngå å oppdatere DOM for ofte hvis tiden ikke endres
     if (newHour !== currentHour || newMinute !== currentMinute) {
-       displayTime(newHour, newMinute); // Oppdater global state og visuell klokke
+       displayTime(newHour, newMinute);
     }
 }
+
 
 function handleMouseUp(event) {
     if (!isDragging) return;
     isDragging = false;
     draggedHand = null;
-    // Sett tilbake cursor bare hvis modus fortsatt er set_analog
-    if (modeSelect.value === 'set_analog' && taskActive) {
+    if (taskActive && analogClockElement.classList.contains('interactive-clock') && !isGameOver) {
        analogClockElement.style.cursor = 'grab';
     } else {
         analogClockElement.style.cursor = 'default';
     }
-    // console.log("Stopped dragging");
 }
 
-// Stopp også dragging hvis musen forlater klokkeområdet
-analogClockElement.addEventListener('mouseleave', handleMouseUp);
+// === EVENT LISTENERS ===
+gameModeSelect.addEventListener('change', (e) => {
+    toggleCustomSettings(e.target.value === 'custom');
+    // Start på nytt når man bytter modus? Eller bare neste oppgave? La oss starte på nytt.
+    initializeGame();
+});
+
+// Legg til listeners for checkboxes hvis du vil at spillet skal restarte ved endring
+customPracticeSettings.addEventListener('change', (e) => {
+    // Hvis en checkbox endres, og vi er i custom mode, start på nytt?
+    if (e.target.type === 'checkbox' && gameModeSelect.value === 'custom') {
+        // Valgfritt: Kan bare generere ny oppgave ELLER restarte helt.
+        // initializeGame(); // Restarter score, liv etc.
+         generateNewTask(); // Bare lager ny oppgave med nye innstillinger
+    }
+});
 
 
-// --- Event Listeners ---
-modeSelect.addEventListener('change', generateNewTask);
-difficultySelect.addEventListener('change', generateNewTask);
 nextTaskButton.addEventListener('click', generateNewTask);
 checkAnswerButton.addEventListener('click', handleCheckAnswer);
+restartButton.addEventListener('click', initializeGame);
 
-// Dra-og-slipp listeners for analog klokke
+// Dra-og-slipp listeners
 analogClockElement.addEventListener('mousedown', handleMouseDown);
-// Legg listeners på hele dokumentet for å fange opp musebevegelser/slipp selv om pekeren går utenfor klokka
 document.addEventListener('mousemove', handleMouseMove);
 document.addEventListener('mouseup', handleMouseUp);
+analogClockElement.addEventListener('mouseleave', handleMouseUp); // Stopp hvis mus går ut
 
 
-// --- Initialisering ---
-generateNewTask(); // Start den første oppgaven
+// === START SPILLET ===
+initializeGame(); // Kall denne for å sette opp alt ved start
