@@ -4,37 +4,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Klokkemesteren</title>
-    <!-- Legg til en kul font fra Google Fonts (valgfritt) -->
+
+    <!-- Link til Google Fonts (Pacifico for tittel, Roboto for brødtekst) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Link til CSS-filen -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+    <!-- Hovedcontainer for applikasjonen -->
     <div class="app-container">
+
+        <!-- Tittel -->
         <h1>Klokkemesteren</h1>
 
+        <!-- Område for selve spillet (klokker og oppgave) -->
         <div class="game-area">
+
+            <!-- Visning av klokkene -->
             <div class="clock-display">
+
                 <!-- Analog Klokke -->
                 <div class="analog-clock" id="analog-clock">
+                    <!-- Visere -->
                     <div class="hand hour-hand" id="hour-hand"></div>
                     <div class="hand minute-hand" id="minute-hand"></div>
+                    <!-- Midtpunkt -->
                     <div class="center-dot"></div>
-                    <!-- Tall på klokka -->
-                    <div class="number number1"><div>1</div></div>
-                    <div class="number number2"><div>2</div></div>
-                    <div class="number number3"><div>3</div></div>
-                    <div class="number number4"><div>4</div></div>
-                    <div class="number number5"><div>5</div></div>
-                    <div class="number number6"><div>6</div></div>
-                    <div class="number number7"><div>7</div></div>
-                    <div class="number number8"><div>8</div></div>
-                    <div class="number number9"><div>9</div></div>
-                    <div class="number number10"><div>10</div></div>
-                    <div class="number number11"><div>11</div></div>
-                    <div class="number number12"><div>12</div></div>
+                    <!-- Tall på klokka (uten ekstra div inni) -->
+                    <div class="number number1">1</div>
+                    <div class="number number2">2</div>
+                    <div class="number number3">3</div>
+                    <div class="number number4">4</div>
+                    <div class="number number5">5</div>
+                    <div class="number number6">6</div>
+                    <div class="number number7">7</div>
+                    <div class="number number8">8</div>
+                    <div class="number number9">9</div>
+                    <div class="number number10">10</div>
+                    <div class="number number11">11</div>
+                    <div class="number number12">12</div>
                 </div>
 
                 <!-- Digital Klokke -->
@@ -43,43 +55,53 @@
                 </div>
             </div>
 
+            <!-- Område for oppgave, svaralternativer og feedback -->
             <div class="task-area">
+                <!-- Spørsmål/Instruksjon -->
                 <h2 id="task-question">Hva er klokka?</h2>
+                <!-- Container for svaralternativ-knapper (Les klokka modus) -->
                 <div id="answer-options" class="answer-options">
                     <!-- Alternativer lastes inn av JavaScript -->
                 </div>
-                <!-- Knapp for "Still Klokka"-modus -->
+                <!-- Knapp for å sjekke svaret (Still klokka modus) -->
                 <button id="check-answer-button" class="action-button hidden">Sjekk Svaret</button>
-                 <p id="feedback" class="feedback"></p>
+                <!-- Tilbakemelding til brukeren -->
+                <p id="feedback" class="feedback"></p>
             </div>
         </div>
 
+        <!-- Område for spillinformasjon (poeng, neste knapp) -->
         <div class="game-info">
             <p>Poeng: <span id="score">0</span></p>
-            <!-- <p>Nivå: <span id="level">1</span></p> --> {/* Kan gjeninnføres senere */}
             <button id="next-task-button" class="action-button hidden">Neste oppgave</button>
         </div>
 
+        <!-- Område for innstillinger (modus, vanskelighetsgrad) -->
         <div class="settings">
            <label for="mode-select">Modus:</label>
            <select id="mode-select">
                <option value="read_analog">Les Analog</option>
                <option value="set_analog">Still Analog</option>
+               <!-- Fremtidige moduser kan aktiveres ved å fjerne 'disabled' -->
                <option value="read_digital" disabled>Les Digital (TODO)</option>
                <option value="set_digital" disabled>Still Digital (TODO)</option>
                <option value="match_clocks" disabled>Koble Klokker (TODO)</option>
            </select>
-            <label for="difficulty-select">Nivå:</label>
-            <select id="difficulty-select">
+
+           <label for="difficulty-select">Nivå:</label>
+           <select id="difficulty-select">
                 <option value="1">Hele timer</option>
                 <option value="2">Halvtimer</option>
                 <option value="3">Kvart over/på</option>
                 <option value="4">5-minutter</option>
                 <option value="5">Alle minutter</option>
-            </select>
+           </select>
         </div>
-    </div>
 
+    </div> <!-- Slutt på app-container -->
+
+    <!-- Link til JavaScript-filen (plasseres vanligvis sist i body) -->
     <script src="script.js"></script>
+
 </body>
 </html>
