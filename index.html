@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Klokkemesteren</title>
+    <!-- Legg til en kul font fra Google Fonts (valgfritt) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -14,29 +18,27 @@
         <div class="game-area">
             <div class="clock-display">
                 <!-- Analog Klokke -->
-                <div class="analog-clock">
+                <div class="analog-clock" id="analog-clock">
                     <div class="hand hour-hand" id="hour-hand"></div>
                     <div class="hand minute-hand" id="minute-hand"></div>
-                    <!-- Sekundviser kan legges til senere hvis ønskelig -->
-                    <!-- <div class="hand second-hand" id="second-hand"></div> -->
                     <div class="center-dot"></div>
                     <!-- Tall på klokka -->
-                    <div class="number number1">1</div>
-                    <div class="number number2">2</div>
-                    <div class="number number3">3</div>
-                    <div class="number number4">4</div>
-                    <div class="number number5">5</div>
-                    <div class="number number6">6</div>
-                    <div class="number number7">7</div>
-                    <div class="number number8">8</div>
-                    <div class="number number9">9</div>
-                    <div class="number number10">10</div>
-                    <div class="number number11">11</div>
-                    <div class="number number12">12</div>
+                    <div class="number number1"><div>1</div></div>
+                    <div class="number number2"><div>2</div></div>
+                    <div class="number number3"><div>3</div></div>
+                    <div class="number number4"><div>4</div></div>
+                    <div class="number number5"><div>5</div></div>
+                    <div class="number number6"><div>6</div></div>
+                    <div class="number number7"><div>7</div></div>
+                    <div class="number number8"><div>8</div></div>
+                    <div class="number number9"><div>9</div></div>
+                    <div class="number number10"><div>10</div></div>
+                    <div class="number number11"><div>11</div></div>
+                    <div class="number number12"><div>12</div></div>
                 </div>
 
                 <!-- Digital Klokke -->
-                <div class="digital-clock" id="digital-clock">
+                <div class="digital-clock" id="digital-clock-display">
                     <span id="digital-hour">00</span>:<span id="digital-minute">00</span>
                 </div>
             </div>
@@ -46,24 +48,26 @@
                 <div id="answer-options" class="answer-options">
                     <!-- Alternativer lastes inn av JavaScript -->
                 </div>
+                <!-- Knapp for "Still Klokka"-modus -->
+                <button id="check-answer-button" class="action-button hidden">Sjekk Svaret</button>
                  <p id="feedback" class="feedback"></p>
             </div>
         </div>
 
         <div class="game-info">
             <p>Poeng: <span id="score">0</span></p>
-            <p>Nivå: <span id="level">1</span></p>
-            <button id="next-task-button" class="hidden">Neste oppgave</button>
+            <!-- <p>Nivå: <span id="level">1</span></p> --> {/* Kan gjeninnføres senere */}
+            <button id="next-task-button" class="action-button hidden">Neste oppgave</button>
         </div>
 
         <div class="settings">
            <label for="mode-select">Modus:</label>
            <select id="mode-select">
                <option value="read_analog">Les Analog</option>
-               <option value="read_digital">Les Digital</option>
-               <option value="set_analog">Still Analog (ikke implementert)</option>
-               <option value="set_digital">Still Digital (ikke implementert)</option>
-               <option value="match_clocks">Koble Klokker (ikke implementert)</option>
+               <option value="set_analog">Still Analog</option>
+               <option value="read_digital" disabled>Les Digital (TODO)</option>
+               <option value="set_digital" disabled>Still Digital (TODO)</option>
+               <option value="match_clocks" disabled>Koble Klokker (TODO)</option>
            </select>
             <label for="difficulty-select">Nivå:</label>
             <select id="difficulty-select">
@@ -74,7 +78,6 @@
                 <option value="5">Alle minutter</option>
             </select>
         </div>
-
     </div>
 
     <script src="script.js"></script>
