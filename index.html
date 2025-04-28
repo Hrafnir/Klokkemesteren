@@ -2,7 +2,6 @@
 <html lang="no">
 <head>
     <meta charset="UTF-8">
-    <!-- Viktig for responsivitet og touch -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Klokkemesteren</title>
 
@@ -18,40 +17,31 @@
 
         <h1>Klokkemesteren</h1>
 
-        <!-- ===== STARTSKJERM (Ny) ===== -->
-        <div id="start-screen">
-            <h2>Velkommen!</h2>
-            <p>Hva vil du gjøre?</p>
-            <div class="start-options">
-                <button id="start-game-button" class="action-button large">🏆 Start Spill</button>
-                <button id="start-practice-button" class="action-button large">⚙️ Øv Egendefinert</button>
-            </div>
-        </div>
-
-        <!-- ===== EGENDEFINERT ØVING INNSTILLINGER (Nå en del av flyten) ===== -->
-        <div id="custom-practice-setup" class="hidden">
+        <!-- ===== EGENDEFINERT ØVING INNSTILLINGER (Nå startskjerm) ===== -->
+        <!-- Fjernet 'hidden' klassen her -->
+        <div id="custom-practice-setup">
              <h2>Velg hva du vil øve på:</h2>
              <div id="custom-practice-settings">
                  <fieldset>
                      <legend>Oppgavetyper:</legend>
-                     <div class="checkbox-group">
-                         <input type="checkbox" id="mode-read-analog" value="read_analog" checked> <label for="mode-read-analog">Les Analog</label>
-                     </div>
-                     <div class="checkbox-group">
-                         <input type="checkbox" id="mode-set-analog" value="set_analog" checked> <label for="mode-set-analog">Still Analog</label>
-                     </div>
+                     <!-- ID-er beholdes for JS -->
+                     <div class="checkbox-group"> <input type="checkbox" id="mode-read-analog" value="read_analog"> <label for="mode-read-analog">Les Analog</label> </div>
+                     <div class="checkbox-group"> <input type="checkbox" id="mode-set-analog" value="set_analog"> <label for="mode-set-analog">Still Analog</label> </div>
                  </fieldset>
                  <fieldset>
                      <legend>Vanskelighetsgrad:</legend>
-                     <div class="checkbox-group"> <input type="checkbox" id="diff-1" value="1" checked> <label for="diff-1">Hele timer</label> </div>
-                     <div class="checkbox-group"> <input type="checkbox" id="diff-2" value="2" checked> <label for="diff-2">Halvtimer</label> </div>
-                     <div class="checkbox-group"> <input type="checkbox" id="diff-3" value="3" checked> <label for="diff-3">Kvart over/på</label> </div>
-                     <div class="checkbox-group"> <input type="checkbox" id="diff-4" value="4" checked> <label for="diff-4">5-minutter</label> </div>
-                     <div class="checkbox-group"> <input type="checkbox" id="diff-5" value="5" checked> <label for="diff-5">Alle minutter</label> </div>
+                     <div class="checkbox-group"> <input type="checkbox" id="diff-1" value="1"> <label for="diff-1">Hele timer</label> </div>
+                     <div class="checkbox-group"> <input type="checkbox" id="diff-2" value="2"> <label for="diff-2">Halvtimer</label> </div>
+                     <div class="checkbox-group"> <input type="checkbox" id="diff-3" value="3"> <label for="diff-3">Kvart over/på</label> </div>
+                     <div class="checkbox-group"> <input type="checkbox" id="diff-4" value="4"> <label for="diff-4">5-minutter</label> </div>
+                     <div class="checkbox-group"> <input type="checkbox" id="diff-5" value="5"> <label for="diff-5">Alle minutter</label> </div>
                  </fieldset>
              </div>
-             <button id="begin-custom-practice-button" class="action-button">Start Øving</button>
-             <button id="back-to-start-button" class="secondary-button">Tilbake</button>
+             <!-- Oppdaterte knapper -->
+             <div class="setup-actions">
+                 <button id="start-practice-button" class="action-button">Start Øving</button>
+                 <button id="start-game-with-settings-button" class="action-button">🏆 Start Spill</button>
+             </div>
         </div>
 
 
@@ -64,23 +54,16 @@
                 <p>Tid: <span id="timer-display">15</span>s</p>
             </div>
 
-            <!-- Område for selve spillet -->
+            <!-- Spillområdet (uendret) -->
             <div class="game-area">
                 <div class="clock-display">
-                    <div class="analog-clock" id="analog-clock">
-                        <div class="hand hour-hand" id="hour-hand"></div>
-                        <div class="hand minute-hand" id="minute-hand"></div>
-                        <div class="center-dot"></div>
-                        <div class="number number1">1</div> <div class="number number2">2</div>
-                        <div class="number number3">3</div> <div class="number number4">4</div>
-                        <div class="number number5">5</div> <div class="number number6">6</div>
-                        <div class="number number7">7</div> <div class="number number8">8</div>
-                        <div class="number number9">9</div> <div class="number number10">10</div>
-                        <div class="number number11">11</div> <div class="number number12">12</div>
+                    <div class="analog-clock" id="analog-clock"> /* ... klokke-elementer ... */
+                        <div class="hand hour-hand" id="hour-hand"></div><div class="hand minute-hand" id="minute-hand"></div><div class="center-dot"></div>
+                        <div class="number number1">1</div> <div class="number number2">2</div> <div class="number number3">3</div> <div class="number number4">4</div>
+                        <div class="number number5">5</div> <div class="number number6">6</div> <div class="number number7">7</div> <div class="number number8">8</div>
+                        <div class="number number9">9</div> <div class="number number10">10</div><div class="number number11">11</div><div class="number number12">12</div>
                     </div>
-                    <div class="digital-clock" id="digital-clock-display">
-                        <span id="digital-hour">00</span>:<span id="digital-minute">00</span>
-                    </div>
+                    <div class="digital-clock" id="digital-clock-display"><span id="digital-hour">00</span>:<span id="digital-minute">00</span></div>
                 </div>
                 <div class="task-area">
                     <h2 id="task-question">Hva er klokka?</h2>
@@ -90,18 +73,22 @@
                 </div>
             </div>
 
-            <!-- Spillkontroller / Game Over -->
+            <!-- Oppdaterte Spillkontroller -->
             <div class="game-controls">
-                <!-- Neste knapp vises kun ved feil svar eller timeout -->
+                 <!-- Vises kun ved feil svar eller timeout -->
                 <button id="next-task-button" class="action-button hidden">Neste oppgave</button>
+
+                <!-- Game Over Melding -->
                 <div id="game-over-message" class="hidden">
                     <h2>Game Over!</h2>
                     <p>Din poengsum: <span id="final-score">0</span></p>
                     <button id="restart-button" class="action-button">Spill Igjen</button>
-                     <button id="back-to-start-button-gameover" class="secondary-button">Tilbake til start</button>
+                    <button id="back-to-settings-button-gameover" class="secondary-button">Tilbake til Innstillinger</button>
                 </div>
-                 <!-- Knapp for å gå tilbake til start fra øving -->
-                 <button id="exit-practice-button" class="secondary-button hidden">Avslutt Øving</button>
+
+                 <!-- Knapper under aktiv øving/spill -->
+                 <button id="change-practice-settings-button" class="secondary-button hidden">Endre Innstillinger</button>
+                 <button id="back-to-settings-button-game" class="secondary-button hidden">Tilbake til Innstillinger</button>
             </div>
         </div>
 
