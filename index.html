@@ -17,14 +17,12 @@
 
         <h1>Klokkemesteren</h1>
 
-        <!-- ===== EGENDEFINERT ØVING INNSTILLINGER (Nå startskjerm) ===== -->
-        <!-- Fjernet 'hidden' klassen her -->
+        <!-- ===== EGENDEFINERT ØVING INNSTILLINGER (Startskjerm) ===== -->
         <div id="custom-practice-setup">
              <h2>Velg hva du vil øve på:</h2>
              <div id="custom-practice-settings">
                  <fieldset>
                      <legend>Oppgavetyper:</legend>
-                     <!-- ID-er beholdes for JS -->
                      <div class="checkbox-group"> <input type="checkbox" id="mode-read-analog" value="read_analog"> <label for="mode-read-analog">Les Analog</label> </div>
                      <div class="checkbox-group"> <input type="checkbox" id="mode-set-analog" value="set_analog"> <label for="mode-set-analog">Still Analog</label> </div>
                  </fieldset>
@@ -37,7 +35,6 @@
                      <div class="checkbox-group"> <input type="checkbox" id="diff-5" value="5"> <label for="diff-5">Alle minutter</label> </div>
                  </fieldset>
              </div>
-             <!-- Oppdaterte knapper -->
              <div class="setup-actions">
                  <button id="start-practice-button" class="action-button">Start Øving</button>
                  <button id="start-game-with-settings-button" class="action-button">🏆 Start Spill</button>
@@ -54,16 +51,26 @@
                 <p>Tid: <span id="timer-display">15</span>s</p>
             </div>
 
-            <!-- Spillområdet (uendret) -->
+            <!-- Spillområdet -->
             <div class="game-area">
                 <div class="clock-display">
-                    <div class="analog-clock" id="analog-clock"> /* ... klokke-elementer ... */
-                        <div class="hand hour-hand" id="hour-hand"></div><div class="hand minute-hand" id="minute-hand"></div><div class="center-dot"></div>
-                        <div class="number number1">1</div> <div class="number number2">2</div> <div class="number number3">3</div> <div class="number number4">4</div>
-                        <div class="number number5">5</div> <div class="number number6">6</div> <div class="number number7">7</div> <div class="number number8">8</div>
-                        <div class="number number9">9</div> <div class="number number10">10</div><div class="number number11">11</div><div class="number number12">12</div>
+                    <!-- Analog Klokke -->
+                    <div class="analog-clock" id="analog-clock">
+                        <div class="hand hour-hand" id="hour-hand"></div>
+                        <div class="hand minute-hand" id="minute-hand"></div>
+                        <div class="center-dot"></div>
+                        <!-- Tall på klokka -->
+                        <div class="number number1">1</div> <div class="number number2">2</div>
+                        <div class="number number3">3</div> <div class="number number4">4</div>
+                        <div class="number number5">5</div> <div class="number number6">6</div>
+                        <div class="number number7">7</div> <div class="number number8">8</div>
+                        <div class="number number9">9</div> <div class="number number10">10</div>
+                        <div class="number number11">11</div> <div class="number number12">12</div>
                     </div>
-                    <div class="digital-clock" id="digital-clock-display"><span id="digital-hour">00</span>:<span id="digital-minute">00</span></div>
+                    <!-- Digital Klokke -->
+                    <div class="digital-clock" id="digital-clock-display">
+                        <span id="digital-hour">00</span>:<span id="digital-minute">00</span>
+                    </div>
                 </div>
                 <div class="task-area">
                     <h2 id="task-question">Hva er klokka?</h2>
@@ -73,20 +80,15 @@
                 </div>
             </div>
 
-            <!-- Oppdaterte Spillkontroller -->
+            <!-- Spillkontroller -->
             <div class="game-controls">
-                 <!-- Vises kun ved feil svar eller timeout -->
                 <button id="next-task-button" class="action-button hidden">Neste oppgave</button>
-
-                <!-- Game Over Melding -->
                 <div id="game-over-message" class="hidden">
                     <h2>Game Over!</h2>
                     <p>Din poengsum: <span id="final-score">0</span></p>
                     <button id="restart-button" class="action-button">Spill Igjen</button>
                     <button id="back-to-settings-button-gameover" class="secondary-button">Tilbake til Innstillinger</button>
                 </div>
-
-                 <!-- Knapper under aktiv øving/spill -->
                  <button id="change-practice-settings-button" class="secondary-button hidden">Endre Innstillinger</button>
                  <button id="back-to-settings-button-game" class="secondary-button hidden">Tilbake til Innstillinger</button>
             </div>
