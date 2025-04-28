@@ -1,5 +1,5 @@
 /* ========================================= */
-/* Klokkemesteren - Ny Stil v2.0           */
+/* Klokkemesteren - Stilark v3.0           */
 /* ========================================= */
 
 /* --- Grunnleggende & Variabler --- */
@@ -8,7 +8,7 @@
 :root {
     --bg-gradient-start: #89f7fe; /* Lysere himmelblå */
     --bg-gradient-end: #66a6ff;   /* Dypere blå */
-    --container-bg: rgba(255, 255, 255, 0.95);
+    --container-bg: rgba(255, 255, 255, 0.97); /* Mindre gjennomsiktig */
     --primary-color: #005c97; /* Mørkere, sterkere blå */
     --secondary-color: #495057; /* Mørk grå for tekst */
     --accent-color: #fca311;  /* Varm oransje/gul for knapper */
@@ -29,15 +29,26 @@
     padding: 0;
 }
 
+html {
+    /* Forbedrer touch-interaksjon på noen enheter */
+    touch-action: manipulation;
+}
+
+
 body {
     font-family: var(--font-body);
     display: flex;
     justify-content: center;
-    align-items: flex-start; /* Start fra toppen for lengre innhold */
+    align-items: flex-start;
     min-height: 100vh;
     background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
-    padding: 20px; /* Legg til litt padding på body */
+    padding: 20px;
     color: var(--secondary-color);
+    /* Hindre utilsiktet tekstmarkering under drag */
+    user-select: none;
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* IE/Edge */
 }
 
 /* --- Hovedcontainer --- */
@@ -48,27 +59,134 @@ body {
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
     text-align: center;
     width: 100%;
-    max-width: 750px; /* Litt bredere */
-    margin-top: 20px; /* Litt luft på toppen */
+    max-width: 750px;
+    margin-top: 20px;
 }
 
 h1 {
     font-family: var(--font-heading);
     color: var(--primary-color);
-    font-size: 3.8em; /* Enda litt større tittel */
+    font-size: 3.8em;
     margin-bottom: 25px;
     text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+     font-size: 2em;
+     color: var(--primary-color);
+     margin-bottom: 15px;
+}
+
+/* --- Startskjerm --- */
+#start-screen {
+    padding: 40px 20px;
+    text-align: center;
+}
+
+#start-screen h2 {
+    font-size: 2.5em;
+}
+
+#start-screen p {
+    font-size: 1.3em;
+    margin-bottom: 30px;
+}
+
+.start-options {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+/* --- Egendefinert Øving Oppsett --- */
+#custom-practice-setup {
+    padding: 25px 30px;
+    border: 1px solid #eee;
+    border-radius: 15px;
+    background-color: #fafafa;
+    margin-bottom: 20px;
+    box-shadow: inset 0 1px 4px rgba(0,0,0,0.05);
+}
+
+#custom-practice-setup h2 {
+    font-size: 1.8em;
+    margin-bottom: 25px;
+}
+
+#custom-practice-settings {
+    margin-top: 15px;
+    padding: 10px 0; /* Justert padding */
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 25px;
+    width: 100%;
+}
+
+#custom-practice-settings fieldset {
+    border: 1px solid #d0d0d0;
+    border-radius: 8px;
+    padding: 15px 20px;
+    margin: 0;
+    min-width: 220px;
+    text-align: left;
+    background-color: #fff; /* Litt kontrast */
+}
+
+#custom-practice-settings legend {
+    font-weight: bold;
+    color: var(--primary-color);
+    padding: 0 8px;
+    font-size: 1.1em;
+}
+
+.checkbox-group {
+    display: block;
+    margin-bottom: 8px;
+    padding-left: 5px;
+}
+
+.checkbox-group label {
+    margin-left: 8px;
+    cursor: pointer;
+    font-size: 1em;
+    position: relative;
+}
+
+.checkbox-group input[type="checkbox"] {
+    cursor: pointer;
+    width: 16px; /* Justert størrelse */
+    height: 16px;
+    vertical-align: middle;
+    position: relative;
+    top: -1px;
+}
+
+/* Knapper i custom setup */
+#custom-practice-setup .action-button {
+    margin-top: 25px;
+    margin-right: 10px;
+}
+#custom-practice-setup .secondary-button {
+    margin-top: 25px;
+}
+
+
+/* --- Spillområde Wrapper --- */
+#game-wrapper {
+    /* Synlighet styres av JS */
 }
 
 /* --- Spillstatus Bar --- */
 .game-status {
     display: flex;
-    flex-wrap: wrap; /* Tillat wrapping på små skjermer */
-    justify-content: space-between; /* Spre elementene ut */
+    flex-wrap: wrap;
+    justify-content: space-between;
     align-items: center;
     margin-bottom: 25px;
     padding: 12px 20px;
-    background-color: rgba(0, 92, 151, 0.08); /* Subtil bakgrunn */
+    background-color: rgba(0, 92, 151, 0.08);
     border-radius: 10px;
     font-size: 1.2em;
     font-weight: bold;
@@ -76,14 +194,14 @@ h1 {
 }
 
 .game-status p {
-    margin: 5px 10px; /* Litt pusterom */
-    white-space: nowrap; /* Unngå linjeskift i "Poeng: X" */
+    margin: 5px 10px;
+    white-space: nowrap;
 }
 
 #lives-display {
     color: var(--incorrect-color);
-    font-size: 1.4em; /* Større hjerter */
-    letter-spacing: 2px; /* Litt avstand mellom hjerter */
+    font-size: 1.4em;
+    letter-spacing: 2px;
 }
 
 #timer-display {
@@ -92,13 +210,13 @@ h1 {
     display: inline-block;
     text-align: right;
     transition: color 0.3s ease, transform 0.3s ease;
-    font-weight: 700; /* Tykkere tall */
+    font-weight: 700;
 }
 
 #timer-display.low-time {
-    color: var(--accent-color); /* Oransje advarsel */
+    color: var(--accent-color);
     transform: scale(1.2);
-    animation: pulse 0.5s infinite alternate; /* Pulse-animasjon */
+    animation: pulse 0.5s infinite alternate;
 }
 
 @keyframes pulse {
@@ -106,13 +224,13 @@ h1 {
 }
 
 
-/* --- Spillområde & Klokker --- */
+/* --- Selve Spillområdet & Klokker --- */
 .game-area {
     display: flex;
     flex-direction: column;
     align-items: center;
     margin-bottom: 25px;
-    min-height: 420px; /* Justert minimumshøyde */
+    min-height: 420px;
 }
 
 .clock-display {
@@ -124,7 +242,7 @@ h1 {
 
 /* Analog Klokke */
 .analog-clock {
-    width: 280px; /* Litt mindre enn før for balanse */
+    width: 280px;
     height: 280px;
     border: 6px solid var(--clock-border);
     border-radius: 50%;
@@ -147,14 +265,14 @@ h1 {
 .minute-hand { width: 45%; left: 5%; height: 5px; background-color: var(--minute-hand-color); }
 .center-dot { width: 12px; height: 12px; background: var(--secondary-color); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; }
 
-/* Tall på Analog Klokke (samme metode som sist) */
+/* Tall på Analog Klokke */
 .number {
     position: absolute; top: 50%; left: 50%; width: 35px; height: 35px;
     margin-left: -17.5px; margin-top: -17.5px; display: flex; justify-content: center;
     align-items: center; font-size: 1.5em; font-weight: bold; color: var(--secondary-color);
     transform-origin: center center;
 }
-.number1 { transform: rotate(30deg) translateY(-120px) rotate(-30deg); } /* Justert avstand */
+.number1 { transform: rotate(30deg) translateY(-120px) rotate(-30deg); }
 .number2 { transform: rotate(60deg) translateY(-120px) rotate(-60deg); }
 .number3 { transform: rotate(90deg) translateY(-120px) rotate(-90deg); }
 .number4 { transform: rotate(120deg) translateY(-120px) rotate(-120deg); }
@@ -169,7 +287,7 @@ h1 {
 
 /* Digital Klokke */
 #digital-clock-display {
-    font-size: 3em; /* Litt mindre for balanse */
+    font-size: 3em;
     font-family: 'Courier New', Courier, monospace;
     background-color: #e9ecef;
     padding: 10px 25px;
@@ -184,13 +302,14 @@ h1 {
 .task-area {
     margin-top: 15px;
     width: 100%;
+    min-height: 150px; /* Gi plass til knapper/feedback */
 }
 
 #task-question {
     font-size: 1.7em;
     margin-bottom: 20px;
     color: var(--primary-color);
-    min-height: 1.3em; /* Forhindre hopping */
+    min-height: 1.3em;
     font-weight: 700;
 }
 
@@ -199,7 +318,7 @@ h1 {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 12px; /* Litt mindre gap */
+    gap: 12px;
     margin-bottom: 15px;
 }
 
@@ -208,7 +327,7 @@ h1 {
     font-size: 1.1em;
     font-weight: 700;
     cursor: pointer;
-    background-color: var(--primary-color); /* Bruk primærfargen */
+    background-color: var(--primary-color);
     color: white;
     border: none;
     border-radius: 8px;
@@ -217,7 +336,7 @@ h1 {
 }
 
 .answer-options button:hover:not(:disabled) {
-    background-color: #007bb5; /* Lysere blå ved hover */
+    background-color: #007bb5;
     transform: translateY(-2px);
     box-shadow: 0 5px 8px rgba(0, 0, 0, 0.15);
 }
@@ -251,23 +370,25 @@ h1 {
     margin-top: 25px;
     min-height: 60px;
     display: flex;
+    flex-wrap: wrap; /* Tillat knapper å wrappe */
     justify-content: center;
     align-items: center;
+    gap: 15px; /* Mellomrom mellom knapper */
 }
 
-/* Generell stil for action-knapper (Neste, Sjekk Svar, Start på nytt) */
+/* Generell stil for action-knapper (Neste, Sjekk Svar, Start, Spill Igjen etc.) */
 .action-button {
      padding: 12px 30px;
      font-size: 1.2em;
      font-weight: bold;
-     color: #fff; /* Hvit tekst */
+     color: #fff;
      background-color: var(--accent-color);
      border: none;
-     border-radius: 25px; /* Mer avrundet */
+     border-radius: 25px;
      cursor: pointer;
      transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-     text-transform: uppercase; /* Store bokstaver */
+     text-transform: uppercase;
      letter-spacing: 1px;
 }
 .action-button:hover {
@@ -279,14 +400,39 @@ h1 {
     transform: translateY(-1px);
     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
 }
+/* Større variant for startknapper */
+.action-button.large {
+    padding: 15px 40px;
+    font-size: 1.4em;
+    border-radius: 30px;
+}
+
+
+/* Sekundær knapp stil (Tilbake/Avslutt) */
+.secondary-button {
+     padding: 10px 25px;
+     font-size: 1.1em;
+     font-weight: bold;
+     color: var(--primary-color);
+     background-color: transparent;
+     border: 2px solid var(--primary-color);
+     border-radius: 25px;
+     cursor: pointer;
+     transition: background-color 0.2s ease, color 0.2s ease;
+}
+.secondary-button:hover {
+    background-color: rgba(0, 92, 151, 0.1);
+    color: #004080;
+}
 
 
 /* Game Over Melding */
 #game-over-message {
-    background-color: rgba(230, 57, 70, 0.1); /* Lys rød */
+    background-color: rgba(230, 57, 70, 0.1);
     padding: 25px 30px;
     border-radius: 15px;
     border: 2px dashed var(--incorrect-color);
+    width: 100%; /* Ta bredde for å sentrere knapper under */
 }
 #game-over-message h2 {
     color: var(--incorrect-color);
@@ -296,88 +442,11 @@ h1 {
 }
 #game-over-message p {
     font-size: 1.2em;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
 }
-#game-over-message #restart-button {
-    /* Bruker .action-button stilen */
-}
-
-
-/* --- Innstillinger --- */
-.settings {
-    margin-top: 35px;
-    padding-top: 25px;
-    border-top: 2px solid rgba(0, 92, 151, 0.1);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
-}
-
-.settings > label { font-weight: bold; color: var(--primary-color); font-size: 1.1em;}
-
-.settings > select#game-mode-select {
-    padding: 10px 15px;
-    font-size: 1.1em;
-    border-radius: 8px;
-    border: 1px solid var(--clock-border);
-    min-width: 250px; /* Sikre litt bredde */
-    background-color: #fff;
-    cursor: pointer;
-}
-
-/* Egendefinerte Innstillinger Boks */
-#custom-practice-settings {
-    margin-top: 15px;
-    padding: 20px;
-    border: 1px solid #e0e0e0;
-    border-radius: 10px;
-    background-color: #fdfdfd;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center; /* Sentrer fieldsets */
-    gap: 25px;
-    width: 100%; /* Ta full bredde innenfor settings */
-    box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
-}
-
-#custom-practice-settings fieldset {
-    border: 1px solid #d0d0d0;
-    border-radius: 8px;
-    padding: 15px 20px;
-    margin: 0;
-    min-width: 220px;
-    text-align: left; /* Venstrejuster innholdet */
-}
-
-#custom-practice-settings legend {
-    font-weight: bold;
-    color: var(--primary-color);
-    padding: 0 8px;
-    font-size: 1.1em;
-}
-
-.checkbox-group {
-    display: block;
-    margin-bottom: 8px;
-    padding-left: 5px; /* Litt innrykk */
-}
-
-.checkbox-group label {
-    margin-left: 8px;
-    cursor: pointer;
-    font-size: 1em;
-    position: relative; /* For potensiell custom checkbox styling */
-    user-select: none; /* Hindre tekstmarkering */
-}
-
-.checkbox-group input[type="checkbox"] {
-    cursor: pointer;
-    width: 15px; /* Større checkbox */
-    height: 15px;
-    vertical-align: middle; /* Juster med teksten */
-    position: relative;
-    top: -1px;
+/* Knapper i game over (arver .action-button/.secondary-button) */
+#game-over-message button {
+    margin: 5px;
 }
 
 
@@ -388,38 +457,73 @@ h1 {
 
 /* --- Enkel responsivitet --- */
 @media (max-width: 600px) {
-    .app-container {
-        padding: 20px;
-    }
-    h1 {
-        font-size: 2.8em;
-    }
-    .game-status {
-        font-size: 1em;
-        padding: 8px 12px;
-    }
-    .analog-clock {
-        width: 240px;
-        height: 240px;
-    }
-    .number { font-size: 1.3em; }
-    .number1 { transform: rotate(30deg) translateY(-100px) rotate(-30deg); }
-    .number2 { transform: rotate(60deg) translateY(-100px) rotate(-60deg); }
-    .number3 { transform: rotate(90deg) translateY(-100px) rotate(-90deg); }
-    .number4 { transform: rotate(120deg) translateY(-100px) rotate(-120deg); }
-    .number5 { transform: rotate(150deg) translateY(-100px) rotate(-150deg); }
-    .number6 { transform: rotate(180deg) translateY(-100px) rotate(-180deg); }
-    .number7 { transform: rotate(210deg) translateY(-100px) rotate(-210deg); }
-    .number8 { transform: rotate(240deg) translateY(-100px) rotate(-240deg); }
-    .number9 { transform: rotate(270deg) translateY(-100px) rotate(-270deg); }
-    .number10 { transform: rotate(300deg) translateY(-100px) rotate(-300deg); }
-    .number11 { transform: rotate(330deg) translateY(-100px) rotate(-330deg); }
-    .number12 { transform: rotate(0deg) translateY(-100px) rotate(0deg); }
+    body { padding: 10px; }
+    .app-container { padding: 20px 15px; }
+    h1 { font-size: 2.8em; }
+    h2 { font-size: 1.6em; }
 
-    #digital-clock-display { font-size: 2.5em; }
-    #task-question { font-size: 1.4em; }
-    .answer-options button { font-size: 1em; padding: 8px 15px;}
-    .action-button { font-size: 1.1em; padding: 10px 25px;}
-    #custom-practice-settings { flex-direction: column; align-items: center;}
-    #custom-practice-settings fieldset { width: 90%; }
+    /* Startskjerm */
+    #start-screen h2 { font-size: 2em;}
+    #start-screen p { font-size: 1.1em; }
+    .action-button.large { font-size: 1.2em; padding: 12px 30px; }
+
+    /* Custom Setup */
+    #custom-practice-setup { padding: 15px; }
+    #custom-practice-settings { gap: 15px; }
+    #custom-practice-settings fieldset { min-width: unset; width: 95%; }
+
+    /* Spillstatus */
+    .game-status { font-size: 1em; padding: 8px 12px; justify-content: center; gap: 10px;}
+    .game-status p { margin: 2px 5px; }
+
+    /* Klokker */
+    .analog-clock { width: 220px; height: 220px; border-width: 5px;} /* Mindre på mobil */
+    .number { font-size: 1.2em; width: 30px; height: 30px; margin-left: -15px; margin-top: -15px;}
+    .number1 { transform: rotate(30deg) translateY(-90px) rotate(-30deg); } /* Justert avstand */
+    .number2 { transform: rotate(60deg) translateY(-90px) rotate(-60deg); }
+    .number3 { transform: rotate(90deg) translateY(-90px) rotate(-90deg); }
+    .number4 { transform: rotate(120deg) translateY(-90px) rotate(-120deg); }
+    .number5 { transform: rotate(150deg) translateY(-90px) rotate(-150deg); }
+    .number6 { transform: rotate(180deg) translateY(-90px) rotate(-180deg); }
+    .number7 { transform: rotate(210deg) translateY(-90px) rotate(-210deg); }
+    .number8 { transform: rotate(240deg) translateY(-90px) rotate(-240deg); }
+    .number9 { transform: rotate(270deg) translateY(-90px) rotate(-270deg); }
+    .number10 { transform: rotate(300deg) translateY(-90px) rotate(-300deg); }
+    .number11 { transform: rotate(330deg) translateY(-90px) rotate(-330deg); }
+    .number12 { transform: rotate(0deg) translateY(-90px) rotate(0deg); }
+    .hour-hand { height: 6px; } .minute-hand { height: 4px; } .center-dot { width: 10px; height: 10px; }
+
+    #digital-clock-display { font-size: 2.2em; padding: 8px 15px; }
+
+    /* Oppgaveområde */
+    #task-question { font-size: 1.3em; margin-bottom: 15px; }
+    .answer-options button { font-size: 0.95em; padding: 8px 12px; }
+    .feedback { font-size: 1.1em; }
+
+    /* Knapper */
+    .action-button { font-size: 1em; padding: 10px 20px; }
+    .secondary-button { font-size: 1em; padding: 8px 18px; }
+
+    /* Game Over */
+     #game-over-message h2 { font-size: 1.6em;}
+     #game-over-message p { font-size: 1.1em; }
+}
+
+@media (max-width: 400px) {
+     h1 { font-size: 2.4em; }
+     .analog-clock { width: 200px; height: 200px; }
+     .number { font-size: 1.1em; }
+     .number1 { transform: rotate(30deg) translateY(-80px) rotate(-30deg); }
+     .number2 { transform: rotate(60deg) translateY(-80px) rotate(-60deg); }
+     .number3 { transform: rotate(90deg) translateY(-80px) rotate(-90deg); }
+     .number4 { transform: rotate(120deg) translateY(-80px) rotate(-120deg); }
+     .number5 { transform: rotate(150deg) translateY(-80px) rotate(-150deg); }
+     .number6 { transform: rotate(180deg) translateY(-80px) rotate(-180deg); }
+     .number7 { transform: rotate(210deg) translateY(-80px) rotate(-210deg); }
+     .number8 { transform: rotate(240deg) translateY(-80px) rotate(-240deg); }
+     .number9 { transform: rotate(270deg) translateY(-80px) rotate(-270deg); }
+     .number10 { transform: rotate(300deg) translateY(-80px) rotate(-300deg); }
+     .number11 { transform: rotate(330deg) translateY(-80px) rotate(-330deg); }
+     .number12 { transform: rotate(0deg) translateY(-80px) rotate(0deg); }
+      #digital-clock-display { font-size: 2em; }
 }
