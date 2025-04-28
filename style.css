@@ -1,5 +1,5 @@
 /* ========================================= */
-/* Klokkemesteren - Stilark v4.0           */
+/* Klokkemesteren - Stilark v5.0 (Finale?) */
 /* ========================================= */
 
 /* --- Grunnleggende & Variabler --- */
@@ -32,8 +32,8 @@ h1 { /* ... uendret h1 ... */
 h2 { /* ... uendret h2 ... */
      font-size: 2em; color: var(--primary-color); margin-bottom: 15px; }
 
-/* --- Egendefinert Øving Oppsett (Startskjerm nå) --- */
-#custom-practice-setup { /* ... uendret, men nå synlig som standard */
+/* --- Egendefinert Øving Oppsett --- */
+#custom-practice-setup { /* ... uendret ... */
     padding: 25px 30px; border: 1px solid #eee; border-radius: 15px;
     background-color: #fafafa; margin-bottom: 20px;
     box-shadow: inset 0 1px 4px rgba(0,0,0,0.05); }
@@ -53,16 +53,9 @@ h2 { /* ... uendret h2 ... */
 .checkbox-group input[type="checkbox"] { /* ... uendret ... */
     cursor: pointer; width: 16px; height: 16px; vertical-align: middle;
     position: relative; top: -1px; }
-
-/* Knapper i custom setup (NY CONTAINER) */
-.setup-actions {
-    margin-top: 30px; /* Mer luft over knappene */
-    display: flex;
-    justify-content: center;
-    gap: 20px; /* Mellomrom mellom knapper */
-    flex-wrap: wrap; /* Tillat wrapping */
-}
-/* Knappene selv bruker .action-button stilen */
+.setup-actions { /* ... uendret ... */
+    margin-top: 30px; display: flex; justify-content: center;
+    gap: 20px; flex-wrap: wrap; }
 
 /* --- Spillområde Wrapper --- */
 #game-wrapper { /* Synlighet styres av JS */ }
@@ -93,34 +86,49 @@ h2 { /* ... uendret h2 ... */
     box-shadow: inset 0 0 10px rgba(0,0,0,0.1), 0 5px 15px rgba(0,0,0,0.05); }
 .analog-clock.interactive-clock { cursor: grab; }
 .analog-clock.interactive-clock:active { cursor: grabbing; }
-.hand { /* ... uendret ... */
-    width: 50%; position: absolute; top: 50%; left: 0; transform-origin: 100% 50%;
-    transform: translateY(-50%) rotate(90deg); border-radius: 3px;
-    transition: transform 0.05s linear; z-index: 5; }
+.hand { /* ... uendret ... */ width: 50%; position: absolute; top: 50%; left: 0; transform-origin: 100% 50%; transform: translateY(-50%) rotate(90deg); border-radius: 3px; transition: transform 0.05s linear; z-index: 5; }
 .hour-hand { width: 35%; left: 15%; height: 7px; background-color: var(--hour-hand-color); z-index: 6; }
 .minute-hand { width: 45%; left: 5%; height: 5px; background-color: var(--minute-hand-color); }
 .center-dot { width: 12px; height: 12px; background: var(--secondary-color); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; }
-.number { /* ... uendret ... */
-    position: absolute; top: 50%; left: 50%; width: 35px; height: 35px;
-    margin-left: -17.5px; margin-top: -17.5px; display: flex; justify-content: center;
-    align-items: center; font-size: 1.5em; font-weight: bold; color: var(--secondary-color);
-    transform-origin: center center; }
-.number1 { transform: rotate(30deg) translateY(-120px) rotate(-30deg); }
-.number2 { transform: rotate(60deg) translateY(-120px) rotate(-60deg); }
-.number3 { transform: rotate(90deg) translateY(-120px) rotate(-90deg); }
-.number4 { transform: rotate(120deg) translateY(-120px) rotate(-120deg); }
-.number5 { transform: rotate(150deg) translateY(-120px) rotate(-150deg); }
-.number6 { transform: rotate(180deg) translateY(-120px) rotate(-180deg); }
-.number7 { transform: rotate(210deg) translateY(-120px) rotate(-210deg); }
-.number8 { transform: rotate(240deg) translateY(-120px) rotate(-240deg); }
-.number9 { transform: rotate(270deg) translateY(-120px) rotate(-270deg); }
-.number10 { transform: rotate(300deg) translateY(-120px) rotate(-300deg); }
-.number11 { transform: rotate(330deg) translateY(-120px) rotate(-330deg); }
-.number12 { transform: rotate(0deg) translateY(-120px) rotate(0deg); }
-#digital-clock-display { /* ... uendret ... */
-    font-size: 3em; font-family: 'Courier New', Courier, monospace; background-color: #e9ecef;
-    padding: 10px 25px; border-radius: 8px; border: 1px solid #ced4da;
-    color: var(--secondary-color); min-width: 160px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
+.number { /* ... uendret ... */ position: absolute; top: 50%; left: 50%; width: 35px; height: 35px; margin-left: -17.5px; margin-top: -17.5px; display: flex; justify-content: center; align-items: center; font-size: 1.5em; font-weight: bold; color: var(--secondary-color); transform-origin: center center; }
+.number1 { transform: rotate(30deg) translateY(-120px) rotate(-30deg); } .number2 { transform: rotate(60deg) translateY(-120px) rotate(-60deg); } .number3 { transform: rotate(90deg) translateY(-120px) rotate(-90deg); } .number4 { transform: rotate(120deg) translateY(-120px) rotate(-120deg); } .number5 { transform: rotate(150deg) translateY(-120px) rotate(-150deg); } .number6 { transform: rotate(180deg) translateY(-120px) rotate(-180deg); } .number7 { transform: rotate(210deg) translateY(-120px) rotate(-210deg); } .number8 { transform: rotate(240deg) translateY(-120px) rotate(-240deg); } .number9 { transform: rotate(270deg) translateY(-120px) rotate(-270deg); } .number10 { transform: rotate(300deg) translateY(-120px) rotate(-300deg); } .number11 { transform: rotate(330deg) translateY(-120px) rotate(-330deg); } .number12 { transform: rotate(0deg) translateY(-120px) rotate(0deg); }
+
+/* --- Digitale Klokker (NY STYLING) --- */
+.digital-clocks-container {
+    display: flex; /* Plasser klokkene side ved side */
+    justify-content: center;
+    align-items: stretch; /* Strekk dem likt vertikalt? */
+    gap: 20px; /* Mellomrom mellom klokkene */
+    margin-top: 10px; /* Litt luft over */
+    flex-wrap: wrap; /* Tillat wrapping på små skjermer */
+}
+
+.digital-clock { /* Gjelder begge (#digital-clock-am, #digital-clock-pm) */
+    font-family: 'Courier New', Courier, monospace;
+    background-color: #e9ecef;
+    padding: 10px 15px; /* Justert padding */
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+    color: var(--secondary-color);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+    text-align: center; /* Sentrer innholdet */
+    min-width: 130px; /* Minimumsbredde */
+}
+
+.digital-clock span { /* Generell stil for tallene */
+    font-size: 1.8em; /* Justert størrelse */
+    font-weight: bold;
+}
+
+.digital-label {
+    display: block; /* Label over tiden */
+    font-size: 0.8em;
+    font-family: var(--font-body); /* Bruk vanlig font */
+    color: var(--secondary-color);
+    margin-bottom: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
 
 /* --- Oppgaveområde --- */
 .task-area { /* ... uendret ... */
@@ -185,7 +193,10 @@ h2 { /* ... uendret h2 ... */
     .number { font-size: 1.2em; width: 30px; height: 30px; margin-left: -15px; margin-top: -15px;}
     .number1 { transform: rotate(30deg) translateY(-90px) rotate(-30deg); } .number2 { transform: rotate(60deg) translateY(-90px) rotate(-60deg); } .number3 { transform: rotate(90deg) translateY(-90px) rotate(-90deg); } .number4 { transform: rotate(120deg) translateY(-90px) rotate(-120deg); } .number5 { transform: rotate(150deg) translateY(-90px) rotate(-150deg); } .number6 { transform: rotate(180deg) translateY(-90px) rotate(-180deg); } .number7 { transform: rotate(210deg) translateY(-90px) rotate(-210deg); } .number8 { transform: rotate(240deg) translateY(-90px) rotate(-240deg); } .number9 { transform: rotate(270deg) translateY(-90px) rotate(-270deg); } .number10 { transform: rotate(300deg) translateY(-90px) rotate(-300deg); } .number11 { transform: rotate(330deg) translateY(-90px) rotate(-330deg); } .number12 { transform: rotate(0deg) translateY(-90px) rotate(0deg); }
     .hour-hand { height: 6px; } .minute-hand { height: 4px; } .center-dot { width: 10px; height: 10px; }
-    #digital-clock-display { font-size: 2.2em; padding: 8px 15px; }
+    /* Juster digitale klokker for mobil */
+    .digital-clocks-container { gap: 10px; }
+    .digital-clock span { font-size: 1.5em; }
+    .digital-clock { min-width: 110px; padding: 8px 10px; }
     #task-question { font-size: 1.3em; margin-bottom: 15px; }
     .answer-options button { font-size: 0.95em; padding: 8px 12px; }
     .feedback { font-size: 1.1em; }
@@ -198,5 +209,6 @@ h2 { /* ... uendret h2 ... */
      .analog-clock { width: 200px; height: 200px; }
      .number { font-size: 1.1em; }
      .number1 { transform: rotate(30deg) translateY(-80px) rotate(-30deg); } .number2 { transform: rotate(60deg) translateY(-80px) rotate(-60deg); } .number3 { transform: rotate(90deg) translateY(-80px) rotate(-90deg); } .number4 { transform: rotate(120deg) translateY(-80px) rotate(-120deg); } .number5 { transform: rotate(150deg) translateY(-80px) rotate(-150deg); } .number6 { transform: rotate(180deg) translateY(-80px) rotate(-180deg); } .number7 { transform: rotate(210deg) translateY(-80px) rotate(-210deg); } .number8 { transform: rotate(240deg) translateY(-80px) rotate(-240deg); } .number9 { transform: rotate(270deg) translateY(-80px) rotate(-270deg); } .number10 { transform: rotate(300deg) translateY(-80px) rotate(-300deg); } .number11 { transform: rotate(330deg) translateY(-80px) rotate(-330deg); } .number12 { transform: rotate(0deg) translateY(-80px) rotate(0deg); }
-      #digital-clock-display { font-size: 2em; }
+     .digital-clock span { font-size: 1.3em; }
+     .digital-clock { min-width: 95px; }
 }
